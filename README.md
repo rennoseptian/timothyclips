@@ -1,54 +1,35 @@
-# Remotion video
+# timothyclips
 
-<p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.apng">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif">
-    </picture>
-  </a>
-</p>
+Klip pendek dengan caption animasi, dibuat dengan [Remotion](https://www.remotion.dev).
 
-Welcome to your Remotion project!
+## Isi `public/`
 
-## Commands
+| Folder | Isi |
+| --- | --- |
+| `Video/` | Klip utama |
+| `Caption/` | File `.srt` untuk klip |
+| `Fonts/` | Montserrat Black, Coolvetica Italic, Aston Script |
+| `Sfx/` | Efek suara |
+| `Overlays-for-transition-if-need-it/` | Light leak (opsional) |
+| `Reference-video-for-styles-and-caption/` | Referensi gaya, tidak dipakai saat render |
 
-**Install Dependencies**
-
-```console
-npm i --loglevel=error
-```
-
-**Start Preview**
+## Perintah
 
 ```console
-npm run dev
+npm i
+npm run dev        # preview di Remotion Studio
+npm run lint
 ```
 
-**Render video**
+Render akhir dilakukan di GitHub: tab **Actions** > **Render video** > **Run workflow**
+(ID composition: `TimothyClip`). Hasilnya diunduh dari bagian *Artifacts* (`video`).
 
-```console
-npx remotion render
-```
+## Mengubah caption
 
-**Upgrade Remotion**
-
-```console
-npx remotion upgrade
-```
-
-## Docs
-
-Get started with Remotion by reading the [fundamentals page](https://www.remotion.dev/docs/the-fundamentals).
-
-## Help
-
-We provide help on our [Discord server](https://discord.gg/6VzzNDwUwV).
-
-## Issues
-
-Found an issue with Remotion? [File an issue here](https://github.com/remotion-dev/remotion/issues/new).
-
-## License
-
-Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+- Teks dan waktu: `src/captions.ts`, dibuat otomatis dari SRT:
+  `node scripts/srt-to-captions.mjs "public/Caption/nama-file.srt"`
+  (waktu per kata adalah perkiraan di dalam tiap baris SRT).
+- Pembagian baris dan gaya (`soft`, `bold`, `key`, `script`): `src/pages.ts`.
+  Jumlah kata di sana harus sama dengan `captions.ts`, kalau tidak preview akan menampilkan error.
+- Tampilan dan animasi: `src/CaptionLayer.tsx`.
+- Opsi di panel Props Studio: `sfx` (klik halus di kata kunci) dan `lightLeak` (overlay di awal).
