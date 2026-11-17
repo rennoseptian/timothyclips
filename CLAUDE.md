@@ -13,6 +13,9 @@ Baca file ini dulu. Jangan menjelajah ulang repo atau menonton ulang referensi t
 5. Render akhir dilakukan user lewat GitHub Actions "Render video" (user yang merge PR). Branch kerja: `edit-kamera-sfx`.
 6. Hook "unpushed commits" sering salah (shallow clone). Verifikasi dengan `git ls-remote --heads origin <branch>` vs `git rev-parse HEAD`. Push: `git -c push.negotiate=true push`.
 
+## Kalau klip/video diganti
+`src/facetrack.ts` (dari `python3 scripts/track-face.py`) dan `scripts/words.json` (dari `python3 scripts/align-words.py`) hanya cocok untuk video dan SRT yang sekarang. Jalankan ulang keduanya untuk video baru, lalu sesuaikan `VIDEO` di `Camera.tsx`, `DURATION_FRAMES` di `script.ts`, dan `durationInFrames` di `Composition.tsx`. SHOTS, CAPTIONS, dan SFX_CUES harus dibuat ulang untuk isi video baru.
+
 ## Spesifikasi
 16:9, 1920x1080, 24 fps, 816 frame (34 dtk). Video sumber berakhir di tengah kata "Dan itu": suara fade 10 frame + turun ke hitam 10 frame.
 
