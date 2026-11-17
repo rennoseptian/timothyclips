@@ -1,10 +1,14 @@
 import { Video } from "@remotion/media";
 import { AbsoluteFill, Composition, interpolate, staticFile, useCurrentFrame } from "remotion";
-import { CaptionLayer } from "./CaptionLayer";
+import { Camera } from "./Camera";
+import { Captions } from "./Captions";
+import { Sfx } from "./Sfx";
+import { DURATION_FRAMES, FPS, LEAKS } from "./script";
 
 type Props = {
   sfx: boolean;
-  lightLeak: boolean;
+  sfxGain: number;
+  leak: boolean;
 };
 
 export const MyComposition = () => {
@@ -12,42 +16,54 @@ export const MyComposition = () => {
     <Composition
       id="TimothyClip"
       component={MyComponent}
-      durationInFrames={576}
+      durationInFrames={800}
       fps={24}
       width={1920}
       height={1080}
-      defaultProps={{ sfx: true, lightLeak: false }}
+      defaultProps={{ sfx: true, sfxGain: 1, leak: true }}
     />
   );
 };
 
-export const MyComponent: React.FC<Props> = ({ sfx, lightLeak }) => {
+export const MyComponent: React.FC<Props> = ({ sfx, sfxGain, leak }) => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill name="Klip" style={{ backgroundColor: "#000" }}>
-      <Video
-        name="Klip utama"
-        src={staticFile("Video/keluarga-sederhana-6.34-6.58.mp4")}
-      />
-      {lightLeak ? (
-        <Video
-          name="Light leak"
-          src={staticFile(
-            "Overlays-for-transition-if-need-it/free-light-leak-transitions-pack-4k-ultra-hd-ytmp4.savetube.vip.mp4"
-          )}
-          muted
-          objectFit="cover"
-          durationInFrames={48}
-          style={{
-            mixBlendMode: "screen",
-            opacity: interpolate(frame, [0, 10, 38, 48], [0, 0.6, 0.6, 0], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            }),
-          }}
-        />
-      ) : null}
-      <CaptionLayer sfx={sfx} />
+      <Camera />
+      {leak
+        ? LEAKS.map((l, i) => {
+            const from = Math.round(l.at * FPS);
+            const dur = Math.round(l.dur * FPS);
+            return (
+              <Video
+                key={i}
+                name={`Light leak ${i + 1}`}
+                src={staticFile(
+                  "Overlays-for-transition-if-need-it/free-light-leak-transitions-pack-4k-ultra-hd-ytmp4.savetube.vip.mp4"
+                )}
+                from={from}
+                durationInFrames={dur}
+                trimBefore={Math.round(l.offset * 25)}
+                muted
+                objectFit="cover"
+                style={{
+                  mixBlendMode: "screen",
+                  opacity:
+                    l.opacity *
+                    interpolate(frame, [from, from + 3, from + dur - 9, from + dur], [0, 1, 1, 0], {
+                      extrapolateLeft: "clamp",
+                      extrapolateRight: "clamp",
+                    }),
+                }}
+              />
+            );
+          })
+        : null}
+      <Captions />
+      {sfx ? <Sfx gain={sfxGain} /> : null}
     </AbsoluteFill>
   );
 };
+
+// DURATION_FRAMES di script.ts harus sama dengan durationInFrames di atas
+void DURATION_FRAMES;
