@@ -18,7 +18,7 @@ Hasilnya diunduh dari *Artifacts* (`video`).
 
 | Bagian | Isi |
 | --- | --- |
-| `SHOTS` | Kamera digital: skala (wide 1.0 / medium 1.25 / close-up 1.5), posisi wajah, tilt naik-turun (`dy`), kemiringan (`rot`), sisi caption, blur dan dorongan saat shot masuk |
+| `SHOTS` | Kamera digital: skala awal -> akhir (wide 1.0 / MCU 1.3 / close-up 1.45-1.6 / ECU ~1.9), posisi wajah di layar, blur saat shot masuk. Hanya zoom-in pelan, tanpa sway, rotasi, atau tilt |
 | `CAPTIONS` | Hanya kata penting. `soft` = pengantar kecil, `key` = kata kunci besar, `huge` = puncak. `flicker` = kedip |
 | `LEAKS` | Overlay light leak (opsional, bisa dimatikan lewat prop `leak`) |
 | `SFX_LIB` / `SFX_CUES` | Daftar SFX dengan volume dasar, dan kapan masing-masing diputar |
@@ -27,7 +27,7 @@ Panel Props di Studio: `sfx` (nyala/mati), `sfxGain` (pengali volume semua SFX),
 
 ## Berkas
 
-- `src/Camera.tsx`: kamera digital. Jendela crop mengikuti wajah dari `src/facetrack.ts`.
+- `src/Camera.tsx`: kamera digital. Tiap shot memakai posisi bingkai tetap (wajah median dari `src/facetrack.ts`) dan zoom-in linear pelan.
 - `src/Captions.tsx`: tampilan caption (Coolvetica Rg untuk pengantar, Coolvetica Hv Comp untuk kata penting).
 - `src/Sfx.tsx`: memutar `SFX_CUES`.
 - `scripts/track-face.py`: membuat `src/facetrack.ts` dari klip (`pip install opencv-python-headless`).

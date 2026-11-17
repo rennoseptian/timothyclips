@@ -14,37 +14,33 @@ export const DURATION_FRAMES = 800;
 export type Shot = {
   from: number;
   to: number;
-  /** skala awal -> akhir (1 = frame penuh, 1.5 = close-up) */
+  /** skala awal -> akhir. Hanya zoom-in pelan (maks ~3% per detik). 1 = frame penuh */
   s: [number, number];
   /** posisi wajah di layar output (0..1). px kecil = wajah di kiri, caption di kanan */
   px: number;
   py: number;
-  /** tilt naik-turun: geser jendela kamera, sebagai pecahan tinggi jendela. + = ke bawah */
-  dy: [number, number];
-  /** kemiringan (derajat) awal -> akhir */
-  rot: [number, number];
-  /** sisi caption: R/L/B (kanan, kiri, bawah) */
-  side: "R" | "L" | "B";
-  /** blur saat shot masuk (px), dorongan skala, dan tilt masuk (pecahan tinggi jendela) */
+  /** blur sesaat saat shot masuk (px), seperti di referensi. 0 = tanpa blur */
   blur: number;
-  kick: number;
-  tiltIn: number;
 };
 
+// Tangga ukuran (lebar wajah / lebar frame di sumber 1080p):
+//   wide 1.0-1.1x (13-14%) | MCU 1.3-1.4x | close-up 1.45-1.6x | ECU ~1.9x (24%+)
+// Tidak ada sway, rotasi, tilt, atau dorongan: referensi hampir diam, variasinya dari potongan.
 export const SHOTS: Shot[] = [
-  { from: 0.0, to: 2.36, s: [1.0, 1.12], px: 0.4, py: 0.44, dy: [0, 0], rot: [0, 0], side: "R", blur: 0, kick: 0, tiltIn: 0 },
-  { from: 2.36, to: 5.08, s: [1.24, 1.34], px: 0.63, py: 0.4, dy: [-0.05, 0.05], rot: [0, -0.8], side: "L", blur: 14, kick: 0.07, tiltIn: 0.05 },
-  { from: 5.08, to: 7.6, s: [1.04, 1.2], px: 0.39, py: 0.42, dy: [0.04, -0.02], rot: [0.6, 0], side: "R", blur: 10, kick: 0.05, tiltIn: -0.04 },
-  { from: 7.6, to: 10.28, s: [1.42, 1.58], px: 0.38, py: 0.4, dy: [-0.03, 0.09], rot: [0, 0], side: "R", blur: 14, kick: 0.08, tiltIn: 0.05 },
-  { from: 10.28, to: 12.25, s: [1.22, 1.42], px: 0.64, py: 0.42, dy: [0, 0], rot: [0, -1.4], side: "L", blur: 12, kick: 0.06, tiltIn: -0.05 },
-  { from: 12.25, to: 14.67, s: [1.16, 1.3], px: 0.64, py: 0.42, dy: [0.03, -0.03], rot: [0, 1.0], side: "L", blur: 14, kick: 0.05, tiltIn: 0.04 },
-  { from: 14.67, to: 17.2, s: [1.08, 1.36], px: 0.38, py: 0.42, dy: [0.05, -0.04], rot: [0, 0], side: "R", blur: 14, kick: 0.07, tiltIn: -0.05 },
-  { from: 17.2, to: 19.9, s: [1.4, 1.12], px: 0.62, py: 0.42, dy: [-0.07, 0], rot: [1.2, 0], side: "L", blur: 10, kick: 0.05, tiltIn: 0.05 },
-  { from: 19.9, to: 22.0, s: [1.1, 1.24], px: 0.4, py: 0.42, dy: [0, 0.05], rot: [0, 0], side: "R", blur: 10, kick: 0.05, tiltIn: -0.04 },
-  { from: 22.0, to: 25.5, s: [1.3, 1.52], px: 0.64, py: 0.4, dy: [-0.04, 0.08], rot: [-0.6, 0.6], side: "L", blur: 14, kick: 0.07, tiltIn: 0.05 },
-  { from: 25.5, to: 27.3, s: [1.52, 1.62], px: 0.5, py: 0.36, dy: [0, 0.02], rot: [1.8, 1.0], side: "B", blur: 18, kick: 0.1, tiltIn: -0.06 },
-  { from: 27.3, to: 30.0, s: [1.34, 1.06], px: 0.4, py: 0.42, dy: [0.06, 0], rot: [0.8, 0], side: "R", blur: 12, kick: 0.04, tiltIn: 0.04 },
-  { from: 30.0, to: 33.4, s: [1.12, 1.34], px: 0.63, py: 0.42, dy: [0, 0.07], rot: [0, 0], side: "L", blur: 12, kick: 0.06, tiltIn: -0.05 },
+  { from: 0.0, to: 2.36, s: [1.0, 1.06], px: 0.4, py: 0.44, blur: 0 },
+  { from: 2.36, to: 5.08, s: [1.3, 1.4], px: 0.63, py: 0.4, blur: 12 },
+  { from: 5.08, to: 7.6, s: [1.0, 1.07], px: 0.39, py: 0.43, blur: 10 },
+  { from: 7.6, to: 10.28, s: [1.45, 1.57], px: 0.38, py: 0.4, blur: 12 },
+  { from: 10.28, to: 12.25, s: [1.3, 1.4], px: 0.64, py: 0.42, blur: 10 },
+  { from: 12.25, to: 14.67, s: [1.15, 1.22], px: 0.64, py: 0.42, blur: 12 },
+  { from: 14.67, to: 15.47, s: [1.0, 1.02], px: 0.4, py: 0.44, blur: 10 },
+  { from: 15.47, to: 17.2, s: [1.85, 1.93], px: 0.38, py: 0.4, blur: 14 },
+  { from: 17.2, to: 19.9, s: [1.0, 1.07], px: 0.62, py: 0.44, blur: 10 },
+  { from: 19.9, to: 22.0, s: [1.3, 1.38], px: 0.4, py: 0.42, blur: 10 },
+  { from: 22.0, to: 25.5, s: [1.45, 1.6], px: 0.64, py: 0.4, blur: 12 },
+  { from: 25.5, to: 27.3, s: [1.85, 1.95], px: 0.36, py: 0.38, blur: 14 },
+  { from: 27.3, to: 30.0, s: [1.0, 1.06], px: 0.4, py: 0.44, blur: 12 },
+  { from: 30.0, to: 33.4, s: [1.35, 1.5], px: 0.62, py: 0.42, blur: 12 },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -72,7 +68,7 @@ export const CAPTIONS: CapEvent[] = [
   { side: "R", end: 17.1, lines: [{ at: 15.47, text: "SPOTLIGHT", kind: "huge", flicker: true }, { at: 16.07, text: "EFFECT", kind: "huge", flicker: true }] },
   { side: "L", end: 23.45, lines: [{ at: 22.29, text: "kalau lu bukan", kind: "soft" }, { at: 22.86, text: "DONALD TRUMP", kind: "key" }] },
   { side: "L", end: 25.4, lines: [{ at: 23.48, text: "belum jadi", kind: "soft" }, { at: 24.28, text: "PRESIDEN", kind: "key" }] },
-  { side: "B", end: 27.2, lines: [{ at: 25.52, text: "YOU'RE", kind: "huge" }, { at: 26.01, text: "NOBODY", kind: "huge", flicker: true }] },
+  { side: "R", end: 27.2, lines: [{ at: 25.52, text: "YOU'RE", kind: "huge" }, { at: 26.01, text: "NOBODY", kind: "huge", flicker: true }] },
   { side: "R", end: 29.6, lines: [{ at: 28.25, text: "ada", kind: "soft" }, { at: 28.44, text: "DUA ORANG", kind: "key" }] },
   { side: "L", end: 31.4, lines: [{ at: 30.04, text: "di", kind: "soft" }, { at: 30.22, text: "KOLOM KOMEN", kind: "key" }] },
   { side: "L", end: 33.3, lines: [{ at: 32.08, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.36, text: "HATI", kind: "huge", flicker: true }] },
