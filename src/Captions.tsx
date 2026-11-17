@@ -30,12 +30,13 @@ const useCaptionFonts = () => {
 
 const kindStyle = (kind: CapLine["kind"]): React.CSSProperties => {
   if (kind === "soft") {
-    return { fontFamily: "CoolveticaRg, sans-serif", fontSize: 66, lineHeight: 1.1, letterSpacing: 0.5 };
+    return { fontFamily: "CoolveticaRg, sans-serif", fontSize: 66, lineHeight: 1.0, letterSpacing: 0.5 };
   }
   return {
     fontFamily: "CoolveticaHv, sans-serif",
     fontSize: kind === "huge" ? 250 : 184,
-    lineHeight: 0.92,
+    // tinggi huruf kapital font ini 0.664em; 0.76 menyisakan jarak terlihat ~0.10em antarbaris
+    lineHeight: 0.76,
     letterSpacing: 1,
     textTransform: "uppercase",
   };
@@ -133,18 +134,19 @@ const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
           position: "absolute",
           display: "flex",
           flexDirection: "column",
-          gap: 8,
+          gap: 0,
           textShadow: "0 6px 30px rgba(0,0,0,0.55)",
           ...box,
         }}
       >
         {ev.lines.map((l, i) => (
-          <LineView
-            key={i}
-            line={l}
-            startFrame={starts[i]}
-            nextFrame={i + 1 < starts.length ? starts[i + 1] : null}
-          />
+          <div key={i} style={{ marginTop: i > 0 && l.kind !== "soft" && ev.lines[i - 1].kind === "soft" ? -8 : 0 }}>
+            <LineView
+              line={l}
+              startFrame={starts[i]}
+              nextFrame={i + 1 < starts.length ? starts[i + 1] : null}
+            />
+          </div>
         ))}
       </div>
     </AbsoluteFill>

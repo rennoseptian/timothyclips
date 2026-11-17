@@ -3,9 +3,9 @@
 // (tanpa import) supaya bisa dibaca juga oleh scripts/check-captions.mjs.
 
 export const FPS = 24;
-// Klip dipotong di 33,33 dtk: tepat di jeda setelah "apa sih gitu" (jeda 33,06-33,57),
-// sebelum "Dan itu" yang terpotong di SRT.
-export const DURATION_FRAMES = 800;
+// Klip penuh 34 dtk (sampai akhir sumber). Ucapan terakhir "Dan itu" terpotong di sumbernya,
+// jadi suara di-fade 6 frame di akhir.
+export const DURATION_FRAMES = 816;
 
 /* ------------------------------------------------------------------ */
 /* KAMERA                                                             */
@@ -40,7 +40,7 @@ export const SHOTS: Shot[] = [
   { from: 22.0, to: 25.5, s: [1.45, 1.6], px: 0.64, py: 0.4, blur: 12 },
   { from: 25.5, to: 27.3, s: [1.85, 1.95], px: 0.36, py: 0.38, blur: 14 },
   { from: 27.3, to: 30.0, s: [1.0, 1.06], px: 0.4, py: 0.44, blur: 12 },
-  { from: 30.0, to: 33.4, s: [1.35, 1.5], px: 0.62, py: 0.42, blur: 12 },
+  { from: 30.0, to: 34.0, s: [1.35, 1.52], px: 0.62, py: 0.42, blur: 12 },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -59,7 +59,7 @@ export type CapLine = {
 export type CapEvent = { side: "R" | "L" | "B"; end: number; lines: CapLine[] };
 
 export const CAPTIONS: CapEvent[] = [
-  { side: "R", end: 2.2, lines: [{ at: 0.12, text: "lu mau misalnya", kind: "soft" }, { at: 0.77, text: "NARSIS", kind: "key" }] },
+  { side: "R", end: 2.25, lines: [{ at: 0.5, text: "lu mau misalnya", kind: "soft" }, { at: 0.95, text: "NARSIS", kind: "key" }, { at: 1.5, text: "PEDULI SETAN", kind: "key" }] },
   { side: "L", end: 4.7, lines: [{ at: 3.16, text: "mau bikin", kind: "soft" }, { at: 3.52, text: "KONTEN", kind: "key" }] },
   { side: "R", end: 7.45, lines: [{ at: 5.99, text: "itu kan", kind: "soft" }, { at: 6.29, text: "DI KEPALA", kind: "key" }] },
   { side: "R", end: 10.2, lines: [{ at: 9.58, text: "ENGGAK BERANI", kind: "key" }] },
@@ -70,8 +70,10 @@ export const CAPTIONS: CapEvent[] = [
   { side: "L", end: 25.4, lines: [{ at: 23.48, text: "belum jadi", kind: "soft" }, { at: 24.28, text: "PRESIDEN", kind: "key" }] },
   { side: "R", end: 27.2, lines: [{ at: 25.52, text: "YOU'RE", kind: "huge" }, { at: 26.01, text: "NOBODY", kind: "huge", flicker: true }] },
   { side: "R", end: 29.6, lines: [{ at: 28.25, text: "ada", kind: "soft" }, { at: 28.44, text: "DUA ORANG", kind: "key" }] },
-  { side: "L", end: 31.4, lines: [{ at: 30.04, text: "di", kind: "soft" }, { at: 30.22, text: "KOLOM KOMEN", kind: "key" }] },
-  { side: "L", end: 33.3, lines: [{ at: 32.08, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.36, text: "HATI", kind: "huge", flicker: true }] },
+  { side: "L", end: 30.9, lines: [{ at: 30.04, text: "di", kind: "soft" }, { at: 30.22, text: "KOLOM KOMEN", kind: "key" }] },
+  { side: "L", end: 31.92, lines: [{ at: 30.98, text: "ALAY LU", kind: "key" }] },
+  { side: "L", end: 32.62, lines: [{ at: 32.08, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.3, text: "HATI", kind: "huge", flicker: true }] },
+  { side: "L", end: 33.45, lines: [{ at: 32.65, text: "APA SIH", kind: "key", flicker: true }] },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -113,7 +115,8 @@ export type SfxCue = { at: number; k: SfxKey; rate?: number; gain?: number; fade
 // Peran tiap suara: whoosh = gerak kamera, focus = blur ke fokus, flash = kilat,
 // digital/scan = istilah kunci, glitch = kedip caption, riser = build-up, tick = kata penting.
 export const SFX_CUES: SfxCue[] = [
-  { at: 0.77, k: "tickA" },
+  { at: 0.95, k: "tickA" },
+  { at: 1.5, k: "tickD", rate: 1.08 },
   { at: 2.3, k: "whoosh" },
   { at: 3.52, k: "tickB", rate: 1.05 },
   { at: 5.05, k: "tickE" },
@@ -138,6 +141,8 @@ export const SFX_CUES: SfxCue[] = [
   { at: 28.44, k: "tickA", rate: 1.1 },
   { at: 29.98, k: "tickC" },
   { at: 30.22, k: "tickB", rate: 0.9 },
+  { at: 30.98, k: "tickF", rate: 1.05 },
   { at: 32.08, k: "glitch", rate: 0.9 },
-  { at: 32.36, k: "tickE", rate: 0.9 },
+  { at: 32.3, k: "tickE", rate: 0.9 },
+  { at: 32.65, k: "tickA", rate: 1.15 },
 ];
