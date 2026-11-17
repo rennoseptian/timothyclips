@@ -53,7 +53,7 @@ export const Camera: React.FC = () => {
         name="Klip utama"
         src={staticFile(VIDEO)}
         volume={(f) =>
-          interpolate(f, [DURATION_FRAMES - 6, DURATION_FRAMES], [1, 0], {
+          interpolate(f, [DURATION_FRAMES - 10, DURATION_FRAMES], [1, 0], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           })

@@ -60,10 +60,19 @@ export const MyComponent: React.FC<Props> = ({ sfx, sfxGain, leak }) => {
           })
         : null}
       <Captions />
+      <AbsoluteFill
+        name="Turun ke hitam"
+        style={{
+          backgroundColor: "#000",
+          opacity: interpolate(frame, [DURATION_FRAMES - 10, DURATION_FRAMES], [0, 1], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          }),
+        }}
+      />
       {sfx ? <Sfx gain={sfxGain} /> : null}
     </AbsoluteFill>
   );
 };
 
-// DURATION_FRAMES di script.ts harus sama dengan durationInFrames di atas
-void DURATION_FRAMES;
+// DURATION_FRAMES di script.ts harus sama dengan durationInFrames di atas (816)

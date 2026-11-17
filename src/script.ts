@@ -33,8 +33,8 @@ export const SHOTS: Shot[] = [
   { from: 7.6, to: 10.28, s: [1.45, 1.57], px: 0.38, py: 0.4, blur: 12 },
   { from: 10.28, to: 12.25, s: [1.3, 1.4], px: 0.64, py: 0.42, blur: 10 },
   { from: 12.25, to: 14.67, s: [1.15, 1.22], px: 0.64, py: 0.42, blur: 12 },
-  { from: 14.67, to: 15.47, s: [1.0, 1.02], px: 0.4, py: 0.44, blur: 10 },
-  { from: 15.47, to: 17.2, s: [1.85, 1.93], px: 0.38, py: 0.4, blur: 14 },
+  { from: 14.67, to: 15.95, s: [1.2, 1.27], px: 0.26, py: 0.44, blur: 10 },
+  { from: 15.95, to: 17.2, s: [1.85, 1.93], px: 0.38, py: 0.4, blur: 14 },
   { from: 17.2, to: 19.9, s: [1.0, 1.07], px: 0.62, py: 0.44, blur: 10 },
   { from: 19.9, to: 22.0, s: [1.3, 1.38], px: 0.4, py: 0.42, blur: 10 },
   { from: 22.0, to: 25.5, s: [1.45, 1.6], px: 0.64, py: 0.4, blur: 12 },
@@ -55,25 +55,29 @@ export type CapLine = {
   kind: "soft" | "key" | "huge";
   /** efek kedip saat muncul */
   flicker?: boolean;
+  /** warna khusus (default putih). red = merah dengan glow tipis, untuk satu momen perhatian */
+  color?: "red";
 };
-export type CapEvent = { side: "R" | "L" | "B"; end: number; lines: CapLine[] };
+export type CapEvent = { side: "R" | "L" | "B" | "C"; end: number; lines: CapLine[] };
 
 export const CAPTIONS: CapEvent[] = [
-  { side: "R", end: 2.25, lines: [{ at: 0.5, text: "lu mau misalnya", kind: "soft" }, { at: 0.95, text: "NARSIS", kind: "key" }, { at: 1.5, text: "PEDULI SETAN", kind: "key" }] },
-  { side: "L", end: 4.7, lines: [{ at: 3.16, text: "mau bikin", kind: "soft" }, { at: 3.52, text: "KONTEN", kind: "key" }] },
-  { side: "R", end: 7.45, lines: [{ at: 5.99, text: "itu kan", kind: "soft" }, { at: 6.29, text: "DI KEPALA", kind: "key" }] },
+  { side: "R", end: 2.25, lines: [{ at: 0.5, text: "lu mau misalnya", kind: "soft" }, { at: 1.02, text: "NARSIS", kind: "key" }, { at: 1.5, text: "PEDULI SETAN", kind: "key" }] },
+  { side: "L", end: 4.7, lines: [{ at: 3.29, text: "mau bikin", kind: "soft" }, { at: 3.69, text: "KONTEN", kind: "key" }] },
+  { side: "R", end: 7.45, lines: [{ at: 5.84, text: "itu kan", kind: "soft" }, { at: 6.35, text: "DI KEPALA", kind: "key" }] },
   { side: "R", end: 10.2, lines: [{ at: 9.58, text: "ENGGAK BERANI", kind: "key" }] },
-  { side: "L", end: 12.2, lines: [{ at: 11.24, text: "gimana ya gua", kind: "soft" }, { at: 11.8, text: "MALU", kind: "huge", flicker: true }] },
-  { side: "L", end: 14.6, lines: [{ at: 13.52, text: "orang tuh", kind: "soft" }, { at: 13.95, text: "ENGGAK", kind: "key" }, { at: 14.27, text: "PEDULI", kind: "key" }] },
-  { side: "R", end: 17.1, lines: [{ at: 15.47, text: "SPOTLIGHT", kind: "huge", flicker: true }, { at: 16.07, text: "EFFECT", kind: "huge", flicker: true }] },
-  { side: "L", end: 23.45, lines: [{ at: 22.29, text: "kalau lu bukan", kind: "soft" }, { at: 22.86, text: "DONALD TRUMP", kind: "key" }] },
-  { side: "L", end: 25.4, lines: [{ at: 23.48, text: "belum jadi", kind: "soft" }, { at: 24.28, text: "PRESIDEN", kind: "key" }] },
-  { side: "R", end: 27.2, lines: [{ at: 25.52, text: "YOU'RE", kind: "huge" }, { at: 26.01, text: "NOBODY", kind: "huge", flicker: true }] },
-  { side: "R", end: 29.6, lines: [{ at: 28.25, text: "ada", kind: "soft" }, { at: 28.44, text: "DUA ORANG", kind: "key" }] },
-  { side: "L", end: 30.9, lines: [{ at: 30.04, text: "di", kind: "soft" }, { at: 30.22, text: "KOLOM KOMEN", kind: "key" }] },
-  { side: "L", end: 31.92, lines: [{ at: 30.98, text: "ALAY LU", kind: "key" }] },
-  { side: "L", end: 32.62, lines: [{ at: 32.08, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.3, text: "HATI", kind: "huge", flicker: true }] },
-  { side: "L", end: 33.45, lines: [{ at: 32.65, text: "APA SIH", kind: "key", flicker: true }] },
+  { side: "L", end: 12.2, lines: [{ at: 11.31, text: "gimana ya gua", kind: "soft" }, { at: 11.8, text: "MALU", kind: "huge", flicker: true }] },
+  { side: "L", end: 14.6, lines: [{ at: 13.52, text: "orang tuh", kind: "soft" }, { at: 13.87, text: "ENGGAK", kind: "key" }, { at: 14.1, text: "PEDULI", kind: "key" }] },
+  // "Betul": satu-satunya kata berwarna, merah dengan glow tipis, di tengah layar
+  { side: "C", end: 15.85, lines: [{ at: 14.76, text: "BETUL", kind: "huge", color: "red" }] },
+  { side: "R", end: 17.1, lines: [{ at: 15.99, text: "SPOTLIGHT", kind: "huge", flicker: true }, { at: 16.38, text: "EFFECT", kind: "huge", flicker: true }] },
+  { side: "L", end: 23.45, lines: [{ at: 22.34, text: "kalau lu bukan", kind: "soft" }, { at: 22.97, text: "DONALD TRUMP", kind: "key", flicker: true }] },
+  { side: "L", end: 25.4, lines: [{ at: 23.48, text: "belum jadi", kind: "soft" }, { at: 24.15, text: "PRESIDEN", kind: "key" }] },
+  { side: "R", end: 27.2, lines: [{ at: 25.6, text: "YOU'RE", kind: "huge" }, { at: 26.02, text: "NOBODY", kind: "huge", flicker: true }] },
+  { side: "R", end: 29.6, lines: [{ at: 28.48, text: "ada", kind: "soft" }, { at: 28.72, text: "DUA ORANG", kind: "key" }] },
+  { side: "L", end: 30.9, lines: [{ at: 29.76, text: "di", kind: "soft" }, { at: 29.95, text: "KOLOM KOMEN", kind: "key" }] },
+  { side: "L", end: 31.92, lines: [{ at: 30.97, text: "ALAY LU", kind: "key" }] },
+  // "sakit hati ... apa sih" jadi satu tumpukan; APA SIH masuk saat diucapkan (~32.8), bertahan sampai jeda
+  { side: "L", end: 33.55, lines: [{ at: 32.1, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.3, text: "HATI", kind: "huge", flicker: true }, { at: 32.8, text: "APA SIH", kind: "key", flicker: true }] },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -82,8 +86,8 @@ export const CAPTIONS: CapEvent[] = [
 
 /** at = detik di klip, offset = detik di file leak, dur = lama, opacity = kekuatan */
 export const LEAKS = [
-  { at: 15.42, offset: 7.0, dur: 0.75, opacity: 0.38 },
-  { at: 25.48, offset: 0.0, dur: 0.7, opacity: 0.3 },
+  { at: 15.92, offset: 7.0, dur: 0.75, opacity: 0.38 },
+  { at: 25.58, offset: 0.0, dur: 0.7, opacity: 0.3 },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -115,34 +119,35 @@ export type SfxCue = { at: number; k: SfxKey; rate?: number; gain?: number; fade
 // Peran tiap suara: whoosh = gerak kamera, focus = blur ke fokus, flash = kilat,
 // digital/scan = istilah kunci, glitch = kedip caption, riser = build-up, tick = kata penting.
 export const SFX_CUES: SfxCue[] = [
-  { at: 0.95, k: "tickA" },
+  { at: 1.02, k: "tickA" },
   { at: 1.5, k: "tickD", rate: 1.08 },
   { at: 2.3, k: "whoosh" },
-  { at: 3.52, k: "tickB", rate: 1.05 },
+  { at: 3.69, k: "tickB", rate: 1.05 },
   { at: 5.05, k: "tickE" },
-  { at: 6.29, k: "tickC", rate: 0.95 },
+  { at: 6.35, k: "tickC", rate: 0.95 },
   { at: 7.55, k: "whoosh", rate: 1.12, gain: 0.8 },
   { at: 9.58, k: "tickE", rate: 1.1 },
   { at: 10.22, k: "tickD" },
   { at: 11.8, k: "glitch" },
   { at: 12.15, k: "focus" },
-  { at: 13.95, k: "tickD", rate: 1.08 },
+  { at: 13.87, k: "tickD", rate: 1.08 },
   { at: 14.6, k: "whoosh", rate: 0.92 },
-  { at: 15.47, k: "flash" },
-  { at: 16.07, k: "digital", rate: 1.12 },
+  { at: 14.76, k: "focus", rate: 1.1 },
+  { at: 15.97, k: "flash" },
+  { at: 16.4, k: "digital", rate: 1.12 },
   { at: 19.85, k: "tickF" },
   { at: 21.95, k: "whoosh", rate: 1.05 },
   { at: 22.4, k: "riser" },
-  { at: 22.86, k: "scan" },
-  { at: 24.28, k: "tickF", rate: 1.1 },
-  { at: 25.52, k: "oldFlash", fade: 1.2 },
-  { at: 26.01, k: "glitch", rate: 0.9 },
+  { at: 22.97, k: "scan" },
+  { at: 24.15, k: "tickF", rate: 1.1 },
+  { at: 25.6, k: "oldFlash", fade: 1.2 },
+  { at: 26.02, k: "glitch", rate: 0.9 },
   { at: 27.28, k: "whoosh", rate: 0.85, gain: 0.8 },
-  { at: 28.44, k: "tickA", rate: 1.1 },
-  { at: 29.98, k: "tickC" },
-  { at: 30.22, k: "tickB", rate: 0.9 },
-  { at: 30.98, k: "tickF", rate: 1.05 },
-  { at: 32.08, k: "glitch", rate: 0.9 },
+  { at: 28.72, k: "tickA", rate: 1.1 },
+  { at: 29.95, k: "tickC" },
+  { at: 30.38, k: "tickB", rate: 0.9 },
+  { at: 30.97, k: "tickF", rate: 1.05 },
+  { at: 32.1, k: "glitch", rate: 0.9 },
   { at: 32.3, k: "tickE", rate: 0.9 },
-  { at: 32.65, k: "tickA", rate: 1.15 },
+  { at: 32.8, k: "tickA", rate: 1.15 },
 ];

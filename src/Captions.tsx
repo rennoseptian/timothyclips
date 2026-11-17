@@ -43,7 +43,7 @@ const kindStyle = (kind: CapLine["kind"]): React.CSSProperties => {
 };
 
 // pola kedip (opacity per frame) saat kata muncul
-const FLICKER = [0, 1, 0.2, 1, 0.35, 1, 0.1, 1, 0.7, 1];
+const FLICKER = [0, 1, 0.2, 1, 0.35, 1, 0.1, 1, 0.6, 0.25, 1, 0.5, 1, 1];
 
 const LineView: React.FC<{
   line: CapLine;
@@ -67,7 +67,11 @@ const LineView: React.FC<{
     <div
       style={{
         ...kindStyle(line.kind),
-        color: "#ffffff",
+        color: line.color === "red" ? "#ff2b2b" : "#ffffff",
+        textShadow:
+          line.color === "red"
+            ? "0 0 10px rgba(255,43,43,0.55), 0 0 30px rgba(255,43,43,0.28), 0 4px 22px rgba(0,0,0,0.5)"
+            : undefined,
         opacity:
           (line.flicker
             ? interpolate(age, [0, 1], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
@@ -82,18 +86,25 @@ const LineView: React.FC<{
           }) +
           dim * (soft ? 2.5 : 3)
         }px)`,
-        scale: interpolate(age, [0, 9], [soft ? 1.04 : line.kind === "huge" ? 1.22 : 1.14, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-          easing: Easing.out(Easing.cubic),
-        }),
+        scale:
+          line.color === "red"
+            ? interpolate(age, [0, 5, 9, 14], [1.28, 0.97, 1.025, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+                easing: Easing.out(Easing.cubic),
+              })
+            : interpolate(age, [0, 9], [soft ? 1.04 : line.kind === "huge" ? 1.22 : 1.14, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+                easing: Easing.out(Easing.cubic),
+              }),
         translate: `${flick ? Math.sin(age * 12.9898) * 5 : 0}px ${interpolate(
           age,
           [0, 9],
           [soft ? 10 : 22, 0],
           { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) }
         )}px`,
-        transformOrigin: "0% 50%",
+        transformOrigin: line.color === "red" ? "50% 50%" : "0% 50%",
         whiteSpace: "nowrap",
       }}
     >
@@ -118,7 +129,9 @@ const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
       ? { left: 1150, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
       : ev.side === "L"
         ? { left: 90, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
-        : { left: 0, right: 0, bottom: 70, justifyContent: "flex-end", alignItems: "center" };
+        : ev.side === "C"
+          ? { left: 0, right: 0, top: 0, bottom: 0, justifyContent: "center", alignItems: "center" }
+          : { left: 0, right: 0, bottom: 70, justifyContent: "flex-end", alignItems: "center" };
 
   return (
     <AbsoluteFill
