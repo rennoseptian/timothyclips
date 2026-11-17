@@ -26,7 +26,11 @@ const ANCHORS = SHOTS.map((shot) => {
   return { x: median(use.map((p) => p[1])), y: median(use.map((p) => p[2])) };
 });
 
-const cameraAt = (t: number) => {
+// Output 16:9 -> base 1 (bingkai penuh). Output 9:16 -> sumber diperbesar agar tinggi 1080 mengisi 1920,
+// lalu jendela 9:16 diambil di sekitar wajah. Zoom per shot (shot.s) tetap relatif terhadap dasar itu.
+const cameraAt = (t: number, outW: number, outH: number) => {
+  const vertical = outH > outW;
+  const base = outH / SRC_H;
   let idx = SHOTS.findIndex((s) => t >= s.from && t < s.to);
   if (idx < 0) idx = SHOTS.length - 1;
   const shot = SHOTS[idx];
@@ -34,19 +38,23 @@ const cameraAt = (t: number) => {
   const p = clamp((t - shot.from) / (shot.to - shot.from), 0, 1);
 
   const s = lerp(shot.s[0], shot.s[1], p); // zoom-in linear, pelan
-  const w = SRC_W / s;
-  const h = SRC_H / s;
-  const cx = clamp(anchor.x * SRC_W + (0.5 - shot.px) * w, w / 2, SRC_W - w / 2);
-  const cy = clamp(anchor.y * SRC_H + (0.5 - shot.py) * h, h / 2, SRC_H - h / 2);
+  const z = s * base; // skala sumber -> output
+  const w = outW / z;
+  const h = outH / z;
+  // vertikal: wajah di tengah horizontal dan di bagian atas, caption di sepertiga bawah
+  const px = vertical ? 0.5 : shot.px;
+  const py = vertical ? (shot.s[0] > 1.7 ? 0.34 : 0.37) : shot.py;
+  const cx = clamp(anchor.x * SRC_W + (0.5 - px) * w, w / 2, SRC_W - w / 2);
+  const cy = clamp(anchor.y * SRC_H + (0.5 - py) * h, h / 2, SRC_H - h / 2);
 
   const blur = shot.blur * (1 - Easing.out(Easing.cubic)(clamp((t - shot.from) / 0.35, 0, 1)));
-  return { s, tx: -(cx - w / 2) * s, ty: -(cy - h / 2) * s, blur };
+  return { s: z, tx: -(cx - w / 2) * z, ty: -(cy - h / 2) * z, blur };
 };
 
 export const Camera: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const c = cameraAt(frame / fps);
+  const { fps, width, height } = useVideoConfig();
+  const c = cameraAt(frame / fps, width, height);
   return (
     <AbsoluteFill name="Kamera" style={{ backgroundColor: "#000", overflow: "hidden" }}>
       <Video

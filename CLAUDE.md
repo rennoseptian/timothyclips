@@ -17,7 +17,7 @@ Baca file ini dulu. Jangan menjelajah ulang repo atau menonton ulang referensi t
 `src/facetrack.ts` (dari `python3 scripts/track-face.py`) dan `scripts/words.json` (dari `python3 scripts/align-words.py`) hanya cocok untuk video dan SRT yang sekarang. Jalankan ulang keduanya untuk video baru, lalu sesuaikan `VIDEO` di `Camera.tsx`, `DURATION_FRAMES` di `script.ts`, dan `durationInFrames` di `Composition.tsx`. SHOTS, CAPTIONS, dan SFX_CUES harus dibuat ulang untuk isi video baru.
 
 ## Spesifikasi
-16:9, 1920x1080, 24 fps, 816 frame (34 dtk). Video sumber berakhir di tengah kata "Dan itu": suara fade 10 frame + turun ke hitam 10 frame.
+Dua composition dari script.ts yang sama: `TimothyClip` (16:9, 1920x1080) dan `TimothyClipVertical` (9:16, 1080x1920). Keduanya 24 fps, 816 frame (34 dtk). Versi vertikal: jendela 9:16 diambil di sekitar wajah (wajah di bagian atas), semua caption di sepertiga bawah, rata tengah, font 0.8x. Tata letak kiri/kanan (`side`) hanya berlaku di 16:9. Render lewat workflow dengan memasukkan ID composition. Video sumber berakhir di tengah kata "Dan itu": suara fade 10 frame + turun ke hitam 10 frame.
 
 ## Preferensi gaya user (sejauh ini, bisa berubah)
 - Gaya "anti-slop" seperti video referensi di `public/Reference-video-for-styles-and-caption`: emosional lewat potongan antar-ukuran bingkai, bukan efek berlebihan.
@@ -48,3 +48,4 @@ SRT hanya punya waktu per baris. Jalankan `python3 scripts/align-words.py` untuk
 - v3: kamera goyang dan tidak konsisten. Diminta close-up, medium close-up, extreme close-up, zoom-in pelan saja.
 - v4: tambah "peduli setan" dan "alay lu", klip selesai di 34 dtk, jarak antarbaris diperkecil.
 - v5: "apa sih" terlalu cepat, tambah BETUL merah di tengah, DONALD TRUMP harus berkedip, sisanya kreatif (turun ke hitam di akhir).
+- v6: minta versi 9:16 dengan aturan yang sama (composition TimothyClipVertical).

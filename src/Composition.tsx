@@ -13,15 +13,26 @@ type Props = {
 
 export const MyComposition = () => {
   return (
-    <Composition
-      id="TimothyClip"
-      component={MyComponent}
-      durationInFrames={816}
-      fps={24}
-      width={1920}
-      height={1080}
-      defaultProps={{ sfx: true, sfxGain: 1, leak: true }}
-    />
+    <>
+      <Composition
+        id="TimothyClip"
+        component={MyComponent}
+        durationInFrames={816}
+        fps={24}
+        width={1920}
+        height={1080}
+        defaultProps={{ sfx: true, sfxGain: 1, leak: true }}
+      />
+      <Composition
+        id="TimothyClipVertical"
+        component={MyComponent}
+        durationInFrames={816}
+        fps={24}
+        width={1080}
+        height={1920}
+        defaultProps={{ sfx: true, sfxGain: 1, leak: true }}
+      />
+    </>
   );
 };
 

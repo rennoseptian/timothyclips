@@ -28,13 +28,13 @@ const useCaptionFonts = () => {
   }, [handle, continueRender, cancelRender]);
 };
 
-const kindStyle = (kind: CapLine["kind"]): React.CSSProperties => {
+const kindStyle = (kind: CapLine["kind"], k = 1): React.CSSProperties => {
   if (kind === "soft") {
-    return { fontFamily: "CoolveticaRg, sans-serif", fontSize: 66, lineHeight: 1.0, letterSpacing: 0.5 };
+    return { fontFamily: "CoolveticaRg, sans-serif", fontSize: 66 * k, lineHeight: 1.0, letterSpacing: 0.5 };
   }
   return {
     fontFamily: "CoolveticaHv, sans-serif",
-    fontSize: kind === "huge" ? 250 : 184,
+    fontSize: (kind === "huge" ? 250 : 184) * k,
     // tinggi huruf kapital font ini 0.664em; 0.76 menyisakan jarak terlihat ~0.10em antarbaris
     lineHeight: 0.76,
     letterSpacing: 1,
@@ -49,7 +49,9 @@ const LineView: React.FC<{
   line: CapLine;
   startFrame: number;
   nextFrame: number | null;
-}> = ({ line, startFrame, nextFrame }) => {
+  k: number;
+  vertical: boolean;
+}> = ({ line, startFrame, nextFrame, k, vertical }) => {
   const frame = useCurrentFrame();
   const age = frame - startFrame;
   const soft = line.kind === "soft";
@@ -66,7 +68,7 @@ const LineView: React.FC<{
   return (
     <div
       style={{
-        ...kindStyle(line.kind),
+        ...kindStyle(line.kind, k),
         color: line.color === "red" ? "#ff2b2b" : "#ffffff",
         textShadow:
           line.color === "red"
@@ -104,7 +106,7 @@ const LineView: React.FC<{
           [soft ? 10 : 22, 0],
           { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) }
         )}px`,
-        transformOrigin: line.color === "red" ? "50% 50%" : "0% 50%",
+        transformOrigin: line.color === "red" || vertical ? "50% 50%" : "0% 50%",
         whiteSpace: "nowrap",
       }}
     >
@@ -115,7 +117,9 @@ const LineView: React.FC<{
 
 const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
+  const vertical = height > width;
+  const k = vertical ? 0.8 : 1;
   const firstAt = ev.lines[0].at;
   const starts = ev.lines.map((l) => Math.round((l.at - firstAt) * fps));
   const exit = interpolate(frame, [durationInFrames - 7, durationInFrames], [0, 1], {
@@ -124,8 +128,9 @@ const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
     easing: Easing.in(Easing.cubic),
   });
 
-  const box: React.CSSProperties =
-    ev.side === "R"
+  const box: React.CSSProperties = vertical
+    ? { left: 40, right: 40, top: 1230, bottom: 110, justifyContent: "center", alignItems: "center" }
+    : ev.side === "R"
       ? { left: 1150, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
       : ev.side === "L"
         ? { left: 90, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
@@ -149,15 +154,18 @@ const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
           flexDirection: "column",
           gap: 0,
           textShadow: "0 6px 30px rgba(0,0,0,0.55)",
+          textAlign: vertical ? "center" : "left",
           ...box,
         }}
       >
         {ev.lines.map((l, i) => (
-          <div key={i} style={{ marginTop: i > 0 && l.kind !== "soft" && ev.lines[i - 1].kind === "soft" ? -8 : 0 }}>
+          <div key={i} style={{ marginTop: i > 0 && l.kind !== "soft" && ev.lines[i - 1].kind === "soft" ? -8 * k : 0 }}>
             <LineView
               line={l}
               startFrame={starts[i]}
               nextFrame={i + 1 < starts.length ? starts[i + 1] : null}
+              k={k}
+              vertical={vertical}
             />
           </div>
         ))}
