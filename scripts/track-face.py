@@ -11,11 +11,11 @@ import sys
 import cv2
 import numpy as np
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else "public/Video/77k-ugH5yF0-1.37.16-1.37.50.mp4"
+SRC = sys.argv[1] if len(sys.argv) > 1 else "public/Video/p1t-074cn38-6.14-6.57.mp4"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "src/facetrack.ts"
 STEP = 3  # ambil sampel tiap 3 frame
 # detik potongan kamera asli pada klip (hasil deteksi adegan)
-HARD_CUTS = [12.25, 14.667]
+HARD_CUTS = []  # video terbaru: satu kamera statis, tanpa potongan asli
 
 cap = cv2.VideoCapture(SRC)
 fps = cap.get(cv2.CAP_PROP_FPS)

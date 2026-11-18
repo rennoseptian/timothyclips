@@ -9,7 +9,6 @@ type Props = {
   sfx: boolean;
   sfxGain: number;
   leak: boolean;
-  captionMode: "key" | "all";
 };
 
 export const MyComposition = () => {
@@ -18,48 +17,30 @@ export const MyComposition = () => {
       <Composition
         id="TimothyClip"
         component={MyComponent}
-        durationInFrames={816}
+        durationInFrames={974}
         fps={24}
         width={1920}
         height={1080}
-        defaultProps={{ sfx: true, sfxGain: 1, leak: true, captionMode: "key" }}
+        defaultProps={{ sfx: true, sfxGain: 1, leak: true }}
       />
       <Composition
         id="TimothyClipVertical"
         component={MyComponent}
-        durationInFrames={816}
+        durationInFrames={974}
         fps={24}
         width={1080}
         height={1920}
-        defaultProps={{ sfx: true, sfxGain: 1, leak: true, captionMode: "key" }}
-      />
-      <Composition
-        id="TimothyClipAll"
-        component={MyComponent}
-        durationInFrames={816}
-        fps={24}
-        width={1920}
-        height={1080}
-        defaultProps={{ sfx: true, sfxGain: 1, leak: true, captionMode: "all" }}
-      />
-      <Composition
-        id="TimothyClipVerticalAll"
-        component={MyComponent}
-        durationInFrames={816}
-        fps={24}
-        width={1080}
-        height={1920}
-        defaultProps={{ sfx: true, sfxGain: 1, leak: true, captionMode: "all" }}
+        defaultProps={{ sfx: true, sfxGain: 1, leak: true }}
       />
     </>
   );
 };
 
-export const MyComponent: React.FC<Props> = ({ sfx, sfxGain, leak, captionMode }) => {
+export const MyComponent: React.FC<Props> = ({ sfx, sfxGain, leak }) => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill name="Klip" style={{ backgroundColor: "#000" }}>
-      <Camera />
+      <Camera behind={<Captions layer="behind" />} />
       {leak
         ? LEAKS.map((l, i) => {
             const from = Math.round(l.at * FPS);
@@ -89,12 +70,12 @@ export const MyComponent: React.FC<Props> = ({ sfx, sfxGain, leak, captionMode }
             );
           })
         : null}
-      <Captions mode={captionMode} />
+      <Captions layer="front" />
       <AbsoluteFill
         name="Turun ke hitam"
         style={{
           backgroundColor: "#000",
-          opacity: interpolate(frame, [DURATION_FRAMES - 10, DURATION_FRAMES], [0, 1], {
+          opacity: interpolate(frame, [DURATION_FRAMES - 8, DURATION_FRAMES], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
@@ -104,5 +85,3 @@ export const MyComponent: React.FC<Props> = ({ sfx, sfxGain, leak, captionMode }
     </AbsoluteFill>
   );
 };
-
-// DURATION_FRAMES di script.ts harus sama dengan durationInFrames di atas (816)

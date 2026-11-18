@@ -1,103 +1,104 @@
-// Edit script untuk klip: semua keputusan kamera, caption, dan SFX ada di sini.
-// Waktu dalam detik (dihitung dari awal klip). File ini sengaja berdiri sendiri
-// (tanpa import) supaya bisa dibaca juga oleh scripts/check-captions.mjs.
+// Edit script untuk klip p1t-074cn38 (dihasilkan oleh scripts/build-edit.py; edit di sana lalu jalankan ulang,
+// atau edit langsung file ini untuk perubahan kecil). Waktu dalam detik dari awal klip. Tanpa import
+// supaya bisa dibaca skrip lain.
 
 export const FPS = 24;
-// Klip penuh 34 dtk (sampai akhir sumber). Ucapan terakhir "Dan itu" terpotong di sumbernya,
-// jadi suara di-fade 6 frame di akhir.
-export const DURATION_FRAMES = 816;
-
-/* ------------------------------------------------------------------ */
-/* KAMERA                                                             */
-/* ------------------------------------------------------------------ */
+/** klip final dimulai di detik ini pada video sumber ("Ini salah satu quotes...") */
+export const START_SEC = 2.0;
+export const START_FRAME = 48;
+/** sampai 42.58 dtk video sumber (setelah "...enggak akan pernah siap."): 974 frame */
+export const DURATION_FRAMES = 974;
 
 export type Shot = {
   from: number;
   to: number;
-  /** skala awal -> akhir. Hanya zoom-in pelan (maks ~3% per detik). 1 = frame penuh */
+  /** zoom awal -> akhir (zoom-in pelan). 1 = frame penuh */
   s: [number, number];
-  /** posisi wajah di layar output (0..1). px kecil = wajah di kiri, caption di kanan */
+  /** posisi wajah di layar 16:9 (0..1); di 9:16 wajah selalu di tengah-atas */
   px: number;
   py: number;
-  /** blur sesaat saat shot masuk (px), seperti di referensi. 0 = tanpa blur */
+  /** blur sesaat saat shot masuk (px) */
   blur: number;
 };
 
-// Tangga ukuran (lebar wajah / lebar frame di sumber 1080p):
-//   wide 1.0-1.1x (13-14%) | MCU 1.3-1.4x | close-up 1.45-1.6x | ECU ~1.9x (24%+)
-// Tidak ada sway, rotasi, tilt, atau dorongan: referensi hampir diam, variasinya dari potongan.
+/** s = kecil (regular), m = kata penting (condensed), l = besar, h = hero merah raksasa di belakang subjek (w = lebar em) */
+export type Seg = { k: "s" | "m" | "l" | "h"; t: string; w?: number };
+/** cara masuk: up/down = dari bawah/atas, side = dari tepi layar sisi luar, zoom = mengecil dari besar, track = huruf merapat, wipe = tersingkap */
+export type Anim = "up" | "down" | "side" | "zoom" | "track" | "wipe";
+export type Cap = { at: number; end: number; anim: Anim; behind: boolean; flicker?: boolean; lines: Seg[][] };
+
 export const SHOTS: Shot[] = [
-  { from: 0.0, to: 2.36, s: [1.0, 1.06], px: 0.4, py: 0.44, blur: 0 },
-  { from: 2.36, to: 5.08, s: [1.3, 1.4], px: 0.63, py: 0.4, blur: 12 },
-  { from: 5.08, to: 7.6, s: [1.0, 1.07], px: 0.39, py: 0.43, blur: 10 },
-  { from: 7.6, to: 10.28, s: [1.45, 1.57], px: 0.38, py: 0.4, blur: 12 },
-  { from: 10.28, to: 12.25, s: [1.3, 1.4], px: 0.64, py: 0.42, blur: 10 },
-  { from: 12.25, to: 14.67, s: [1.15, 1.22], px: 0.64, py: 0.42, blur: 12 },
-  { from: 14.67, to: 15.95, s: [1.2, 1.27], px: 0.26, py: 0.44, blur: 10 },
-  { from: 15.95, to: 17.2, s: [1.85, 1.93], px: 0.38, py: 0.4, blur: 14 },
-  { from: 17.2, to: 19.9, s: [1.0, 1.07], px: 0.62, py: 0.44, blur: 10 },
-  { from: 19.9, to: 22.0, s: [1.3, 1.38], px: 0.4, py: 0.42, blur: 10 },
-  { from: 22.0, to: 25.5, s: [1.45, 1.6], px: 0.64, py: 0.4, blur: 12 },
-  { from: 25.5, to: 27.3, s: [1.85, 1.95], px: 0.36, py: 0.38, blur: 14 },
-  { from: 27.3, to: 30.0, s: [1.0, 1.06], px: 0.4, py: 0.44, blur: 12 },
-  { from: 30.0, to: 34.0, s: [1.35, 1.52], px: 0.62, py: 0.42, blur: 12 },
+  { from: 0.0, to: 2.11, s: [1.0, 1.05], px: 0.5, py: 0.44, blur: 0 },
+  { from: 2.11, to: 4.04, s: [1.35, 1.45], px: 0.36, py: 0.42, blur: 12 },
+  { from: 4.04, to: 6.8, s: [1.7, 1.85], px: 0.38, py: 0.42, blur: 12 },
+  { from: 6.8, to: 8.07, s: [1.0, 1.04], px: 0.5, py: 0.44, blur: 10 },
+  { from: 8.07, to: 10.03, s: [1.4, 1.5], px: 0.64, py: 0.42, blur: 12 },
+  { from: 10.03, to: 12.21, s: [1.55, 1.65], px: 0.36, py: 0.42, blur: 10 },
+  { from: 12.21, to: 14.56, s: [1.8, 1.95], px: 0.62, py: 0.4, blur: 12 },
+  { from: 14.56, to: 16.74, s: [1.0, 1.06], px: 0.5, py: 0.44, blur: 10 },
+  { from: 16.74, to: 19.08, s: [1.75, 1.9], px: 0.38, py: 0.42, blur: 12 },
+  { from: 19.08, to: 20.49, s: [1.0, 1.04], px: 0.5, py: 0.44, blur: 10 },
+  { from: 20.49, to: 22.34, s: [1.6, 1.7], px: 0.62, py: 0.42, blur: 12 },
+  { from: 22.34, to: 25.6, s: [1.35, 1.45], px: 0.64, py: 0.42, blur: 10 },
+  { from: 25.6, to: 27.34, s: [1.7, 1.8], px: 0.38, py: 0.42, blur: 14 },
+  { from: 27.34, to: 29.61, s: [2.0, 2.1], px: 0.62, py: 0.4, blur: 14 },
+  { from: 29.61, to: 31.01, s: [1.0, 1.04], px: 0.5, py: 0.44, blur: 10 },
+  { from: 31.01, to: 33.0, s: [1.4, 1.5], px: 0.62, py: 0.42, blur: 12 },
+  { from: 33.0, to: 35.25, s: [1.55, 1.65], px: 0.38, py: 0.42, blur: 12 },
+  { from: 35.25, to: 37.38, s: [1.0, 1.05], px: 0.5, py: 0.44, blur: 10 },
+  { from: 37.38, to: 39.62, s: [1.4, 1.5], px: 0.62, py: 0.42, blur: 12 },
+  { from: 39.62, to: 40.58, s: [2.0, 2.05], px: 0.4, py: 0.4, blur: 14 },
 ];
 
-/* ------------------------------------------------------------------ */
-/* CAPTION (hanya kata penting, bukan semua ucapan)                   */
-/* ------------------------------------------------------------------ */
-
-export type CapLine = {
-  /** detik saat kata ini diucapkan */
-  at: number;
-  text: string;
-  /** soft = kecil (pengantar), key = kata penting (besar), huge = puncak */
-  kind: "soft" | "key" | "huge";
-  /** efek kedip saat muncul */
-  flicker?: boolean;
-  /** warna khusus (default putih). red = merah dengan glow tipis, untuk satu momen perhatian */
-  color?: "red";
-};
-export type CapEvent = { side: "R" | "L" | "B" | "C"; end: number; lines: CapLine[] };
-
-export const CAPTIONS: CapEvent[] = [
-  { side: "R", end: 2.25, lines: [{ at: 0.62, text: "misalnya", kind: "soft" }, { at: 0.98, text: "NARSIS", kind: "key" }, { at: 1.42, text: "PEDULI SETAN", kind: "key" }] },
-  { side: "L", end: 4.7, lines: [{ at: 3.29, text: "mau bikin", kind: "soft" }, { at: 3.69, text: "KONTEN", kind: "key" }] },
-  { side: "R", end: 7.45, lines: [{ at: 5.84, text: "itu kan", kind: "soft" }, { at: 6.35, text: "DI KEPALA", kind: "key" }] },
-  { side: "R", end: 10.2, lines: [{ at: 9.58, text: "ENGGAK BERANI", kind: "key" }] },
-  { side: "L", end: 12.2, lines: [{ at: 11.31, text: "gimana ya gua", kind: "soft" }, { at: 11.8, text: "MALU", kind: "huge", flicker: true }] },
-  { side: "L", end: 14.6, lines: [{ at: 13.52, text: "orang tuh", kind: "soft" }, { at: 13.87, text: "ENGGAK", kind: "key" }, { at: 14.1, text: "PEDULI", kind: "key" }] },
-  // "Betul": satu-satunya kata berwarna, merah dengan glow tipis, di tengah layar
-  { side: "C", end: 15.85, lines: [{ at: 14.76, text: "BETUL", kind: "huge", color: "red" }] },
-  { side: "R", end: 17.1, lines: [{ at: 15.99, text: "SPOTLIGHT", kind: "huge", flicker: true }, { at: 16.38, text: "EFFECT", kind: "huge", flicker: true }] },
-  { side: "L", end: 23.45, lines: [{ at: 22.34, text: "kalau lu bukan", kind: "soft" }, { at: 22.97, text: "DONALD TRUMP", kind: "key", flicker: true }] },
-  { side: "L", end: 25.4, lines: [{ at: 23.48, text: "belum jadi", kind: "soft" }, { at: 24.15, text: "PRESIDEN", kind: "key" }] },
-  { side: "R", end: 27.2, lines: [{ at: 25.6, text: "YOU'RE", kind: "huge" }, { at: 26.02, text: "NOBODY", kind: "huge", flicker: true }] },
-  { side: "R", end: 29.6, lines: [{ at: 28.48, text: "ada", kind: "soft" }, { at: 28.72, text: "DUA ORANG", kind: "key" }] },
-  { side: "L", end: 30.9, lines: [{ at: 29.76, text: "di", kind: "soft" }, { at: 29.95, text: "KOLOM KOMEN", kind: "key" }] },
-  { side: "L", end: 31.92, lines: [{ at: 30.97, text: "ALAY LU", kind: "key" }] },
-  // "sakit hati" dan "apa sih" dipisah: APA SIH muncul sendiri saat diucapkan, bertahan sampai jeda
-  { side: "L", end: 32.65, lines: [{ at: 32.1, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.3, text: "HATI", kind: "huge", flicker: true }] },
-  { side: "L", end: 33.6, lines: [{ at: 33.0, text: "APA SIH", kind: "key", flicker: true }] },
+export const CAPTIONS: Cap[] = [
+  { at: 0.05, end: 1.03, anim: "up", behind: false, lines: [[{ k: "s", t: "Ini salah satu" }], [{ k: "m", t: "QUOTES" }]] },
+  { at: 0.91, end: 1.59, anim: "side", behind: false, lines: [[{ k: "s", t: "yang gua" }, { k: "m", t: "LUPA" }, { k: "s", t: "ya" }]] },
+  { at: 1.47, end: 2.23, anim: "zoom", behind: false, lines: [[{ k: "s", t: "siapa yang" }], [{ k: "l", t: "BIKIN" }]] },
+  { at: 2.11, end: 4.16, anim: "down", behind: false, lines: [[{ k: "s", t: "Cuman ini" }], [{ k: "l", t: "MENGUBAH" }], [{ k: "l", t: "HIDUP GUA" }]] },
+  { at: 4.04, end: 5.16, anim: "track", behind: true, lines: [[{ k: "s", t: "I'm the" }], [{ k: "h", t: "CAPTAIN OF", w: 2.320 }]] },
+  { at: 5.16, end: 5.89, anim: "zoom", behind: true, lines: [[{ k: "s", t: "my" }], [{ k: "h", t: "SOUL", w: 1.051 }], [{ k: "s", t: "and the" }]] },
+  { at: 5.89, end: 6.92, anim: "wipe", behind: true, lines: [[{ k: "h", t: "MASTER", w: 1.690 }], [{ k: "s", t: "of my faith" }]] },
+  { at: 6.8, end: 8.19, anim: "side", behind: false, lines: [[{ k: "s", t: "Artinya" }], [{ k: "l", t: "APA?" }]] },
+  { at: 8.07, end: 9.24, anim: "up", behind: false, lines: [[{ k: "s", t: "Gua adalah" }], [{ k: "m", t: "KAPTEN" }, { k: "s", t: "dari" }]] },
+  { at: 9.12, end: 10.15, anim: "up", behind: false, lines: [[{ k: "m", t: "JIWA" }, { k: "s", t: "gua sendiri," }]] },
+  { at: 10.03, end: 12.33, anim: "side", behind: false, lines: [[{ k: "s", t: "ya dan" }, { k: "m", t: "MASTER," }, { k: "s", t: "ya." }]] },
+  { at: 12.21, end: 14.68, anim: "track", behind: true, lines: [[{ k: "s", t: "Master dari" }], [{ k: "h", t: "TAKDIR", w: 1.461 }], [{ k: "s", t: "gua sendiri." }]] },
+  { at: 14.56, end: 15.38, anim: "zoom", behind: false, lines: [[{ k: "l", t: "HANYA GUA" }], [{ k: "s", t: "yang bisa" }]] },
+  { at: 15.26, end: 16.11, anim: "down", behind: false, lines: [[{ k: "s", t: "tentuin" }], [{ k: "m", t: "TAKDIR" }, { k: "s", t: "gua sendiri." }]] },
+  { at: 15.99, end: 16.86, anim: "side", behind: false, lines: [[{ k: "s", t: "Ini kayak kayak" }], [{ k: "m", t: "KITA" }]] },
+  { at: 16.74, end: 18.43, anim: "zoom", behind: true, lines: [[{ k: "s", t: "hidup ini" }], [{ k: "h", t: "DI KAPAL", w: 1.793 }], [{ k: "s", t: "gitu loh." }]] },
+  { at: 18.43, end: 19.2, anim: "wipe", behind: true, lines: [[{ k: "h", t: "KITA YANG SETIR,", w: 3.467 }]] },
+  { at: 19.08, end: 20.61, anim: "up", behind: false, lines: [[{ k: "s", t: "kita" }, { k: "l", t: "NAHKODANYA" }]] },
+  { at: 20.49, end: 21.45, anim: "up", behind: false, lines: [[{ k: "s", t: "Memang kadang" }], [{ k: "s", t: "bisa ada" }]] },
+  { at: 21.33, end: 22.46, anim: "track", behind: true, lines: [[{ k: "h", t: "BADAI,", w: 1.357 }], [{ k: "s", t: "tapi ini kita yang" }]] },
+  { at: 22.34, end: 23.73, anim: "side", behind: false, lines: [[{ k: "m", t: "DECIDE" }, { k: "s", t: "kita mau ke mana." }]] },
+  { at: 23.61, end: 24.99, anim: "zoom", behind: false, lines: [[{ k: "s", t: "Lu bisa" }, { k: "m", t: "PILIH" }, { k: "s", t: "gitu," }]] },
+  { at: 24.87, end: 25.72, anim: "down", behind: false, lines: [[{ k: "s", t: "besok lu mau" }], [{ k: "l", t: "BANGUN" }]] },
+  { at: 25.6, end: 26.65, anim: "zoom", behind: true, flicker: true, lines: [[{ k: "s", t: "mau jadi orang" }], [{ k: "h", t: "SEDIH,", w: 1.318 }]] },
+  { at: 26.53, end: 27.46, anim: "side", behind: false, lines: [[{ k: "s", t: "mau jadi" }], [{ k: "l", t: "BAHAGIA," }]] },
+  { at: 27.34, end: 28.51, anim: "wipe", behind: true, flicker: true, lines: [[{ k: "s", t: "mau jadi orang" }], [{ k: "h", t: "DEPRESI,", w: 1.794 }]] },
+  { at: 28.39, end: 29.73, anim: "up", behind: false, lines: [[{ k: "s", t: "mau jadi orang" }], [{ k: "l", t: "SUKSES," }]] },
+  { at: 29.61, end: 30.58, anim: "up", behind: false, lines: [[{ k: "s", t: "itu semua" }, { k: "m", t: "CUMAN" }, { k: "s", t: "ada" }]] },
+  { at: 30.46, end: 31.13, anim: "side", behind: false, lines: [[{ k: "s", t: "di" }, { k: "l", t: "PIKIRAN LU." }]] },
+  { at: 31.01, end: 33.12, anim: "zoom", behind: false, lines: [[{ k: "s", t: "Lu sendiri yang bisa" }], [{ k: "l", t: "BIKIN ITU." }]] },
+  { at: 33.0, end: 34.39, anim: "down", behind: false, lines: [[{ k: "s", t: "Saran gua" }], [{ k: "m", t: "JANGAN PERNAH" }]] },
+  { at: 34.27, end: 35.5, anim: "side", behind: false, lines: [[{ k: "l", t: "NUNGGU" }, { k: "s", t: "untuk lu siap, ya," }]] },
+  { at: 35.38, end: 36.96, anim: "up", behind: false, lines: [[{ k: "s", t: "untuk melakukan hal-hal" }]] },
+  { at: 36.84, end: 37.5, anim: "up", behind: false, lines: [[{ k: "m", t: "APAPUN," }, { k: "s", t: "ya." }]] },
+  { at: 37.38, end: 39.13, anim: "side", behind: false, lines: [[{ k: "s", t: "Jangan pernah" }], [{ k: "l", t: "NUNGGU" }]] },
+  { at: 39.01, end: 39.74, anim: "zoom", behind: false, lines: [[{ k: "s", t: "sampai lu siap karena" }]] },
+  { at: 39.62, end: 40.32, anim: "down", behind: false, lines: [[{ k: "s", t: "lu enggak akan pernah" }]] },
+  { at: 40.2, end: 40.58, anim: "track", behind: true, flicker: true, lines: [[{ k: "h", t: "SIAP.", w: 1.017 }]] },
 ];
 
-/* ------------------------------------------------------------------ */
-/* LIGHT LEAK (overlay dari public/Overlays-...)                      */
-/* ------------------------------------------------------------------ */
-
-/** at = detik di klip, offset = detik di file leak, dur = lama, opacity = kekuatan */
+/** kilatan light leak hanya di perpindahan shot; puncaknya (~0,27 dtk setelah mulai) tepat di potongan */
 export const LEAKS = [
-  // puncak kilatan (~0.27 dtk setelah mulai) jatuh tepat di potongan shot 15.95 dan 25.5
-  { at: 15.68, offset: 1.05, dur: 0.65, opacity: 0.32 },
-  { at: 25.2, offset: 2.1, dur: 0.65, opacity: 0.26 },
+  { at: 3.77, offset: 1.05, dur: 0.65, opacity: 0.3 },
+  { at: 25.33, offset: 2.1, dur: 0.65, opacity: 0.26 },
+  { at: 39.35, offset: 3.15, dur: 0.65, opacity: 0.28 },
 ];
 
-/* ------------------------------------------------------------------ */
-/* SFX                                                                */
-/* ------------------------------------------------------------------ */
-
-// vol = volume dasar yang sudah dinormalisasi dari hasil pengukuran loudness tiap file,
-// supaya puncaknya sekitar 12-17 dB di bawah puncak suara bicara (klik kecil paling pelan).
+// vol = volume dasar hasil normalisasi loudness tiap file (jangan dinaikkan sembarangan).
 export const SFX_LIB = {
   whoosh: { file: "Sfx/Whoosh click.wav", dur: 0.88, vol: 0.2 },
   focus: { file: "Sfx/normalized/camera-focusing-boost.wav", dur: 1.2, vol: 1 },
@@ -116,42 +117,62 @@ export const SFX_LIB = {
 } as const;
 
 export type SfxKey = keyof typeof SFX_LIB;
+/** fade = lama suara terdengar (dtk) dengan fade-out: caption = tick pendek, transisi = lebih panjang */
 export type SfxCue = { at: number; k: SfxKey; rate?: number; gain?: number; fade?: number };
 
-// Peran tiap suara: whoosh = gerak kamera, focus = blur ke fokus, flash = kilat,
-// digital/scan = istilah kunci, glitch = kedip caption, riser = build-up, tick = kata penting.
-// `fade` = lama suara terdengar (dtk) dengan fade-out, supaya semua cue pendek dan halus.
 export const SFX_CUES: SfxCue[] = [
-  { at: 0.98, k: "tickA", fade: 0.2 },
-  { at: 1.42, k: "tickD", rate: 1.08, fade: 0.2 },
-  { at: 2.3, k: "whoosh", fade: 0.5 },
-  { at: 3.69, k: "tickB", rate: 1.05, fade: 0.2 },
-  { at: 5.05, k: "tickE", fade: 0.25 },
-  { at: 6.35, k: "tickC", rate: 0.95, fade: 0.25 },
-  { at: 7.55, k: "whoosh", rate: 1.12, gain: 0.8, fade: 0.5 },
-  { at: 9.58, k: "tickE", rate: 1.1, fade: 0.25 },
-  { at: 10.22, k: "tickD", fade: 0.2 },
-  { at: 11.8, k: "glitch", fade: 0.28 },
-  { at: 12.15, k: "focus", fade: 0.5 },
-  { at: 13.87, k: "tickD", rate: 1.08, fade: 0.2 },
-  { at: 14.6, k: "whoosh", rate: 0.92, fade: 0.5 },
-  { at: 14.76, k: "focus", rate: 1.1, gain: 0.8, fade: 0.45 },
-  { at: 15.9, k: "flash", fade: 0.6 },
-  { at: 15.99, k: "glitch", rate: 1.1, gain: 0.7, fade: 0.25 },
-  { at: 16.4, k: "digital", rate: 1.12, fade: 0.4 },
-  { at: 19.85, k: "tickF", fade: 0.25 },
-  { at: 21.95, k: "whoosh", rate: 1.05, fade: 0.5 },
-  { at: 22.1, k: "riser", gain: 0.8, fade: 0.9 },
-  { at: 22.97, k: "scan", fade: 0.45 },
-  { at: 24.15, k: "tickF", rate: 1.1, fade: 0.25 },
-  { at: 25.45, k: "oldFlash", fade: 0.9 },
-  { at: 26.02, k: "glitch", rate: 0.9, fade: 0.3 },
-  { at: 27.28, k: "whoosh", rate: 0.85, gain: 0.8, fade: 0.5 },
-  { at: 28.72, k: "tickA", rate: 1.1, fade: 0.2 },
-  { at: 29.95, k: "tickC", fade: 0.25 },
-  { at: 30.38, k: "tickB", rate: 0.9, fade: 0.2 },
-  { at: 30.97, k: "tickF", rate: 1.05, fade: 0.25 },
-  { at: 32.1, k: "glitch", rate: 0.9, fade: 0.28 },
-  { at: 32.3, k: "tickE", rate: 0.9, fade: 0.25 },
-  { at: 33.0, k: "glitch", rate: 1.1, gain: 0.8, fade: 0.25 },
+  { at: 0.05, k: "tickA", rate: 1.0, gain: 1.0, fade: 0.2 },
+  { at: 0.91, k: "tickD", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 1.47, k: "tickB", rate: 0.95, gain: 1.0, fade: 0.2 },
+  { at: 2.06, k: "whoosh", rate: 1.08, gain: 0.8, fade: 0.45 },
+  { at: 2.11, k: "tickF", rate: 1.12, gain: 1.0, fade: 0.2 },
+  { at: 3.94, k: "flash", rate: 1.0, gain: 1.0, fade: 0.6 },
+  { at: 4.04, k: "glitch", rate: 1.05, gain: 0.7, fade: 0.3 },
+  { at: 5.16, k: "digital", rate: 1.1, gain: 0.7, fade: 0.4 },
+  { at: 5.89, k: "glitch", rate: 1.0, gain: 0.7, fade: 0.3 },
+  { at: 6.75, k: "whoosh", rate: 1.0, gain: 0.8, fade: 0.45 },
+  { at: 6.8, k: "tickD", rate: 1.12, gain: 1.0, fade: 0.2 },
+  { at: 8.02, k: "focus", rate: 1.08, gain: 0.8, fade: 0.45 },
+  { at: 8.07, k: "tickB", rate: 1.0, gain: 1.0, fade: 0.2 },
+  { at: 9.12, k: "tickF", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 9.98, k: "whoosh", rate: 0.92, gain: 0.8, fade: 0.45 },
+  { at: 10.03, k: "tickC", rate: 0.95, gain: 1.0, fade: 0.2 },
+  { at: 12.16, k: "focus", rate: 1.0, gain: 0.8, fade: 0.45 },
+  { at: 12.21, k: "digital", rate: 1.1, gain: 0.7, fade: 0.4 },
+  { at: 14.51, k: "whoosh", rate: 1.08, gain: 0.8, fade: 0.45 },
+  { at: 14.56, k: "tickA", rate: 1.0, gain: 1.0, fade: 0.2 },
+  { at: 15.26, k: "tickD", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 15.99, k: "tickB", rate: 0.95, gain: 1.0, fade: 0.2 },
+  { at: 16.69, k: "focus", rate: 0.92, gain: 0.8, fade: 0.45 },
+  { at: 16.74, k: "digital", rate: 1.0, gain: 0.7, fade: 0.4 },
+  { at: 18.43, k: "glitch", rate: 1.05, gain: 0.7, fade: 0.3 },
+  { at: 19.03, k: "whoosh", rate: 1.0, gain: 0.8, fade: 0.45 },
+  { at: 19.08, k: "tickE", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 20.44, k: "focus", rate: 1.08, gain: 0.8, fade: 0.45 },
+  { at: 21.33, k: "glitch", rate: 1.0, gain: 0.7, fade: 0.3 },
+  { at: 22.29, k: "whoosh", rate: 0.92, gain: 0.8, fade: 0.45 },
+  { at: 22.34, k: "tickD", rate: 1.12, gain: 1.0, fade: 0.2 },
+  { at: 23.61, k: "tickB", rate: 1.0, gain: 1.0, fade: 0.2 },
+  { at: 24.87, k: "tickF", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 25.5, k: "oldFlash", rate: 1.0, gain: 1.0, fade: 0.9 },
+  { at: 25.6, k: "glitch", rate: 1.05, gain: 0.7, fade: 0.3 },
+  { at: 26.53, k: "tickE", rate: 1.12, gain: 1.0, fade: 0.2 },
+  { at: 27.29, k: "whoosh", rate: 1.08, gain: 0.8, fade: 0.45 },
+  { at: 27.34, k: "glitch", rate: 1.0, gain: 0.7, fade: 0.3 },
+  { at: 28.39, k: "tickD", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 29.56, k: "focus", rate: 0.92, gain: 0.8, fade: 0.45 },
+  { at: 29.61, k: "tickB", rate: 0.95, gain: 1.0, fade: 0.2 },
+  { at: 30.46, k: "tickF", rate: 1.12, gain: 1.0, fade: 0.2 },
+  { at: 30.96, k: "whoosh", rate: 1.0, gain: 0.8, fade: 0.45 },
+  { at: 31.01, k: "tickC", rate: 1.0, gain: 1.0, fade: 0.2 },
+  { at: 32.95, k: "focus", rate: 1.08, gain: 0.8, fade: 0.45 },
+  { at: 33.0, k: "tickE", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 34.27, k: "tickA", rate: 0.95, gain: 1.0, fade: 0.2 },
+  { at: 35.2, k: "whoosh", rate: 0.92, gain: 0.8, fade: 0.45 },
+  { at: 36.84, k: "tickD", rate: 1.12, gain: 1.0, fade: 0.2 },
+  { at: 37.33, k: "focus", rate: 1.0, gain: 0.8, fade: 0.45 },
+  { at: 37.38, k: "tickB", rate: 1.0, gain: 1.0, fade: 0.2 },
+  { at: 39.3, k: "riser", rate: 1.0, gain: 0.8, fade: 0.9 },
+  { at: 39.52, k: "flash", rate: 1.0, gain: 1.0, fade: 0.6 },
+  { at: 40.2, k: "digital", rate: 1.0, gain: 0.7, fade: 0.4 },
 ];
