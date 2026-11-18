@@ -10,6 +10,7 @@ import {
   useDelayRender,
   useVideoConfig,
 } from "remotion";
+import { CAPTIONS_ALL } from "./captions-all";
 import { CAPTIONS, CapEvent, CapLine } from "./script";
 
 // Caption hanya untuk kata penting. Kata muncul bertumpuk: baris pengantar kecil, lalu kata kunci
@@ -28,13 +29,13 @@ const useCaptionFonts = () => {
   }, [handle, continueRender, cancelRender]);
 };
 
-const kindStyle = (kind: CapLine["kind"]): React.CSSProperties => {
+const kindStyle = (kind: CapLine["kind"], k = 1): React.CSSProperties => {
   if (kind === "soft") {
-    return { fontFamily: "CoolveticaRg, sans-serif", fontSize: 66, lineHeight: 1.0, letterSpacing: 0.5 };
+    return { fontFamily: "CoolveticaRg, sans-serif", fontSize: 66 * k, lineHeight: 1.0, letterSpacing: 0.5 };
   }
   return {
     fontFamily: "CoolveticaHv, sans-serif",
-    fontSize: kind === "huge" ? 250 : 184,
+    fontSize: (kind === "huge" ? 250 : 184) * k,
     // tinggi huruf kapital font ini 0.664em; 0.76 menyisakan jarak terlihat ~0.10em antarbaris
     lineHeight: 0.76,
     letterSpacing: 1,
@@ -49,7 +50,9 @@ const LineView: React.FC<{
   line: CapLine;
   startFrame: number;
   nextFrame: number | null;
-}> = ({ line, startFrame, nextFrame }) => {
+  k: number;
+  vertical: boolean;
+}> = ({ line, startFrame, nextFrame, k, vertical }) => {
   const frame = useCurrentFrame();
   const age = frame - startFrame;
   const soft = line.kind === "soft";
@@ -66,7 +69,7 @@ const LineView: React.FC<{
   return (
     <div
       style={{
-        ...kindStyle(line.kind),
+        ...kindStyle(line.kind, k),
         color: line.color === "red" ? "#ff2b2b" : "#ffffff",
         textShadow:
           line.color === "red"
@@ -104,7 +107,7 @@ const LineView: React.FC<{
           [soft ? 10 : 22, 0],
           { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) }
         )}px`,
-        transformOrigin: line.color === "red" ? "50% 50%" : "0% 50%",
+        transformOrigin: line.color === "red" || vertical ? "50% 50%" : "0% 50%",
         whiteSpace: "nowrap",
       }}
     >
@@ -113,9 +116,11 @@ const LineView: React.FC<{
   );
 };
 
-const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
+const EventView: React.FC<{ ev: CapEvent; lift: boolean }> = ({ ev, lift }) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
+  const vertical = height > width;
+  const k = vertical ? 0.8 : 1;
   const firstAt = ev.lines[0].at;
   const starts = ev.lines.map((l) => Math.round((l.at - firstAt) * fps));
   const exit = interpolate(frame, [durationInFrames - 7, durationInFrames], [0, 1], {
@@ -124,8 +129,9 @@ const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
     easing: Easing.in(Easing.cubic),
   });
 
-  const box: React.CSSProperties =
-    ev.side === "R"
+  const box: React.CSSProperties = vertical
+    ? { left: 40, right: 40, top: lift ? 1130 : 1230, bottom: lift ? 330 : 110, justifyContent: "center", alignItems: "center" }
+    : ev.side === "R"
       ? { left: 1150, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
       : ev.side === "L"
         ? { left: 90, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
@@ -149,15 +155,18 @@ const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
           flexDirection: "column",
           gap: 0,
           textShadow: "0 6px 30px rgba(0,0,0,0.55)",
+          textAlign: vertical ? "center" : "left",
           ...box,
         }}
       >
         {ev.lines.map((l, i) => (
-          <div key={i} style={{ marginTop: i > 0 && l.kind !== "soft" && ev.lines[i - 1].kind === "soft" ? -8 : 0 }}>
+          <div key={i} style={{ marginTop: i > 0 && l.kind !== "soft" && ev.lines[i - 1].kind === "soft" ? -8 * k : 0 }}>
             <LineView
               line={l}
               startFrame={starts[i]}
               nextFrame={i + 1 < starts.length ? starts[i + 1] : null}
+              k={k}
+              vertical={vertical}
             />
           </div>
         ))}
@@ -166,17 +175,69 @@ const EventView: React.FC<{ ev: CapEvent }> = ({ ev }) => {
   );
 };
 
-export const Captions: React.FC = () => {
+// Mode "semua": transkrip lengkap sebagai teks kecil di bawah, cepat dan halus (tanpa blur besar).
+const SubView: React.FC<{ text: string }> = ({ text }) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames, width, height } = useVideoConfig();
+  const vertical = height > width;
+  const out = interpolate(frame, [durationInFrames - 3, durationInFrames], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const inn = interpolate(frame, [0, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  return (
+    <AbsoluteFill
+      style={{
+        justifyContent: "flex-end",
+        alignItems: "center",
+        paddingBottom: vertical ? 150 : 64,
+        paddingLeft: 40,
+        paddingRight: 40,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "CoolveticaRg, sans-serif",
+          fontSize: vertical ? 50 : 56,
+          letterSpacing: 0.5,
+          color: "#ffffff",
+          textAlign: "center",
+          opacity: Math.min(inn, out) * 0.95,
+          translate: `0px ${(1 - inn) * 8}px`,
+          textShadow: "0 3px 18px rgba(0,0,0,0.65)",
+        }}
+      >
+        {text}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export const Captions: React.FC<{ mode: "key" | "all" }> = ({ mode }) => {
   useCaptionFonts();
   const { fps } = useVideoConfig();
+  const all = mode === "all";
   return (
     <AbsoluteFill name="Caption penting">
-      {CAPTIONS.map((ev, i) => {
+      {all
+        ? CAPTIONS_ALL.map((c, i) => {
+            const from = Math.round(c.at * fps);
+            const to = Math.max(from + 6, Math.round(c.end * fps));
+            return (
+              <Sequence key={`s${i}`} name={`Teks: ${c.text}`} from={from} durationInFrames={to - from}>
+                <SubView text={c.text} />
+              </Sequence>
+            );
+          })
+        : null}
+      {CAPTIONS.map((full, i) => {
+        // mode semua: baris pengantar kecil sudah ada di transkrip, jadi hanya kata penting yang besar
+        const ev = all ? { ...full, lines: full.lines.filter((l) => l.kind !== "soft") } : full;
         const from = Math.round(ev.lines[0].at * fps);
         const to = Math.round(ev.end * fps);
         return (
           <Sequence key={i} name={`Caption ${i + 1}: ${ev.lines.map((l) => l.text).join(" ")}`} from={from} durationInFrames={to - from}>
-            <EventView ev={ev} />
+            <EventView ev={ev} lift={all} />
           </Sequence>
         );
       })}
