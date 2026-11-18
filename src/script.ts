@@ -61,7 +61,7 @@ export type CapLine = {
 export type CapEvent = { side: "R" | "L" | "B" | "C"; end: number; lines: CapLine[] };
 
 export const CAPTIONS: CapEvent[] = [
-  { side: "R", end: 2.25, lines: [{ at: 0.5, text: "lu mau misalnya", kind: "soft" }, { at: 1.02, text: "NARSIS", kind: "key" }, { at: 1.5, text: "PEDULI SETAN", kind: "key" }] },
+  { side: "R", end: 2.25, lines: [{ at: 0.62, text: "misalnya", kind: "soft" }, { at: 0.98, text: "NARSIS", kind: "key" }, { at: 1.42, text: "PEDULI SETAN", kind: "key" }] },
   { side: "L", end: 4.7, lines: [{ at: 3.29, text: "mau bikin", kind: "soft" }, { at: 3.69, text: "KONTEN", kind: "key" }] },
   { side: "R", end: 7.45, lines: [{ at: 5.84, text: "itu kan", kind: "soft" }, { at: 6.35, text: "DI KEPALA", kind: "key" }] },
   { side: "R", end: 10.2, lines: [{ at: 9.58, text: "ENGGAK BERANI", kind: "key" }] },
@@ -76,8 +76,9 @@ export const CAPTIONS: CapEvent[] = [
   { side: "R", end: 29.6, lines: [{ at: 28.48, text: "ada", kind: "soft" }, { at: 28.72, text: "DUA ORANG", kind: "key" }] },
   { side: "L", end: 30.9, lines: [{ at: 29.76, text: "di", kind: "soft" }, { at: 29.95, text: "KOLOM KOMEN", kind: "key" }] },
   { side: "L", end: 31.92, lines: [{ at: 30.97, text: "ALAY LU", kind: "key" }] },
-  // "sakit hati ... apa sih" jadi satu tumpukan; APA SIH masuk saat diucapkan (~32.8), bertahan sampai jeda
-  { side: "L", end: 33.55, lines: [{ at: 32.1, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.3, text: "HATI", kind: "huge", flicker: true }, { at: 32.8, text: "APA SIH", kind: "key", flicker: true }] },
+  // "sakit hati" dan "apa sih" dipisah: APA SIH muncul sendiri saat diucapkan, bertahan sampai jeda
+  { side: "L", end: 32.65, lines: [{ at: 32.1, text: "SAKIT", kind: "huge", flicker: true }, { at: 32.3, text: "HATI", kind: "huge", flicker: true }] },
+  { side: "L", end: 33.6, lines: [{ at: 33.0, text: "APA SIH", kind: "key", flicker: true }] },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -86,8 +87,9 @@ export const CAPTIONS: CapEvent[] = [
 
 /** at = detik di klip, offset = detik di file leak, dur = lama, opacity = kekuatan */
 export const LEAKS = [
-  { at: 15.92, offset: 7.0, dur: 0.75, opacity: 0.38 },
-  { at: 25.58, offset: 0.0, dur: 0.7, opacity: 0.3 },
+  // puncak kilatan (~0.27 dtk setelah mulai) jatuh tepat di potongan shot 15.95 dan 25.5
+  { at: 15.68, offset: 1.05, dur: 0.65, opacity: 0.32 },
+  { at: 25.2, offset: 2.1, dur: 0.65, opacity: 0.26 },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -118,36 +120,38 @@ export type SfxCue = { at: number; k: SfxKey; rate?: number; gain?: number; fade
 
 // Peran tiap suara: whoosh = gerak kamera, focus = blur ke fokus, flash = kilat,
 // digital/scan = istilah kunci, glitch = kedip caption, riser = build-up, tick = kata penting.
+// `fade` = lama suara terdengar (dtk) dengan fade-out, supaya semua cue pendek dan halus.
 export const SFX_CUES: SfxCue[] = [
-  { at: 1.02, k: "tickA" },
-  { at: 1.5, k: "tickD", rate: 1.08 },
-  { at: 2.3, k: "whoosh" },
-  { at: 3.69, k: "tickB", rate: 1.05 },
-  { at: 5.05, k: "tickE" },
-  { at: 6.35, k: "tickC", rate: 0.95 },
-  { at: 7.55, k: "whoosh", rate: 1.12, gain: 0.8 },
-  { at: 9.58, k: "tickE", rate: 1.1 },
-  { at: 10.22, k: "tickD" },
-  { at: 11.8, k: "glitch" },
-  { at: 12.15, k: "focus" },
-  { at: 13.87, k: "tickD", rate: 1.08 },
-  { at: 14.6, k: "whoosh", rate: 0.92 },
-  { at: 14.76, k: "focus", rate: 1.1 },
-  { at: 15.97, k: "flash" },
-  { at: 16.4, k: "digital", rate: 1.12 },
-  { at: 19.85, k: "tickF" },
-  { at: 21.95, k: "whoosh", rate: 1.05 },
-  { at: 22.4, k: "riser" },
-  { at: 22.97, k: "scan" },
-  { at: 24.15, k: "tickF", rate: 1.1 },
-  { at: 25.6, k: "oldFlash", fade: 1.2 },
-  { at: 26.02, k: "glitch", rate: 0.9 },
-  { at: 27.28, k: "whoosh", rate: 0.85, gain: 0.8 },
-  { at: 28.72, k: "tickA", rate: 1.1 },
-  { at: 29.95, k: "tickC" },
-  { at: 30.38, k: "tickB", rate: 0.9 },
-  { at: 30.97, k: "tickF", rate: 1.05 },
-  { at: 32.1, k: "glitch", rate: 0.9 },
-  { at: 32.3, k: "tickE", rate: 0.9 },
-  { at: 32.8, k: "tickA", rate: 1.15 },
+  { at: 0.98, k: "tickA", fade: 0.2 },
+  { at: 1.42, k: "tickD", rate: 1.08, fade: 0.2 },
+  { at: 2.3, k: "whoosh", fade: 0.5 },
+  { at: 3.69, k: "tickB", rate: 1.05, fade: 0.2 },
+  { at: 5.05, k: "tickE", fade: 0.25 },
+  { at: 6.35, k: "tickC", rate: 0.95, fade: 0.25 },
+  { at: 7.55, k: "whoosh", rate: 1.12, gain: 0.8, fade: 0.5 },
+  { at: 9.58, k: "tickE", rate: 1.1, fade: 0.25 },
+  { at: 10.22, k: "tickD", fade: 0.2 },
+  { at: 11.8, k: "glitch", fade: 0.28 },
+  { at: 12.15, k: "focus", fade: 0.5 },
+  { at: 13.87, k: "tickD", rate: 1.08, fade: 0.2 },
+  { at: 14.6, k: "whoosh", rate: 0.92, fade: 0.5 },
+  { at: 14.76, k: "focus", rate: 1.1, gain: 0.8, fade: 0.45 },
+  { at: 15.9, k: "flash", fade: 0.6 },
+  { at: 15.99, k: "glitch", rate: 1.1, gain: 0.7, fade: 0.25 },
+  { at: 16.4, k: "digital", rate: 1.12, fade: 0.4 },
+  { at: 19.85, k: "tickF", fade: 0.25 },
+  { at: 21.95, k: "whoosh", rate: 1.05, fade: 0.5 },
+  { at: 22.1, k: "riser", gain: 0.8, fade: 0.9 },
+  { at: 22.97, k: "scan", fade: 0.45 },
+  { at: 24.15, k: "tickF", rate: 1.1, fade: 0.25 },
+  { at: 25.45, k: "oldFlash", fade: 0.9 },
+  { at: 26.02, k: "glitch", rate: 0.9, fade: 0.3 },
+  { at: 27.28, k: "whoosh", rate: 0.85, gain: 0.8, fade: 0.5 },
+  { at: 28.72, k: "tickA", rate: 1.1, fade: 0.2 },
+  { at: 29.95, k: "tickC", fade: 0.25 },
+  { at: 30.38, k: "tickB", rate: 0.9, fade: 0.2 },
+  { at: 30.97, k: "tickF", rate: 1.05, fade: 0.25 },
+  { at: 32.1, k: "glitch", rate: 0.9, fade: 0.28 },
+  { at: 32.3, k: "tickE", rate: 0.9, fade: 0.25 },
+  { at: 33.0, k: "glitch", rate: 1.1, gain: 0.8, fade: 0.25 },
 ];

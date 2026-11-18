@@ -17,7 +17,7 @@ Baca file ini dulu. Jangan menjelajah ulang repo atau menonton ulang referensi t
 `src/facetrack.ts` (dari `python3 scripts/track-face.py`) dan `scripts/words.json` (dari `python3 scripts/align-words.py`) hanya cocok untuk video dan SRT yang sekarang. Jalankan ulang keduanya untuk video baru, lalu sesuaikan `VIDEO` di `Camera.tsx`, `DURATION_FRAMES` di `script.ts`, dan `durationInFrames` di `Composition.tsx`. SHOTS, CAPTIONS, dan SFX_CUES harus dibuat ulang untuk isi video baru.
 
 ## Spesifikasi
-Dua composition dari script.ts yang sama: `TimothyClip` (16:9, 1920x1080) dan `TimothyClipVertical` (9:16, 1080x1920). Keduanya 24 fps, 816 frame (34 dtk). Versi vertikal: jendela 9:16 diambil di sekitar wajah (wajah di bagian atas), semua caption di sepertiga bawah, rata tengah, font 0.8x. Tata letak kiri/kanan (`side`) hanya berlaku di 16:9. Render lewat workflow dengan memasukkan ID composition. Video sumber berakhir di tengah kata "Dan itu": suara fade 10 frame + turun ke hitam 10 frame.
+Empat composition dari script.ts yang sama: `TimothyClip` (16:9, 1920x1080), `TimothyClipVertical` (9:16, 1080x1920), serta `TimothyClipAll` dan `TimothyClipVerticalAll` (mode semua caption tampil: transkrip lengkap kecil di bawah + kata penting besar; data dari `python3 scripts/build-all-captions.py` -> `src/captions-all.ts`, jalankan ulang setelah mengubah caption penting). Keduanya 24 fps, 816 frame (34 dtk). Versi vertikal: jendela 9:16 diambil di sekitar wajah (wajah di bagian atas), semua caption di sepertiga bawah, rata tengah, font 0.8x. Tata letak kiri/kanan (`side`) hanya berlaku di 16:9. Render lewat workflow dengan memasukkan ID composition. Video sumber berakhir di tengah kata "Dan itu": suara fade 10 frame + turun ke hitam 10 frame.
 
 ## Preferensi gaya user (sejauh ini, bisa berubah)
 - Gaya "anti-slop" seperti video referensi di `public/Reference-video-for-styles-and-caption`: emosional lewat potongan antar-ukuran bingkai, bukan efek berlebihan.
@@ -27,7 +27,9 @@ Dua composition dari script.ts yang sama: `TimothyClip` (16:9, 1920x1080) dan `T
 - Kamera: close-up wajah, medium close-up, extreme close-up. DILARANG zoom cepat, goyang, sway, tilt. Hanya zoom-in pelan untuk membangun tegangan. Posisi bingkai tetap per shot.
 - Efek kedip (flicker) pada caption penting disukai. Caption yang punya SFX kedip harus benar-benar berkedip (`flicker: true`).
 - SFX harus bervariasi, pakai file milik user di `public/Sfx` (volume sudah dinormalisasi di SFX_LIB; jangan naikkan sembarangan).
-- Light leak tipis dan hangat, hanya di momen tertentu.
+- Light leak tipis dan hangat, HANYA di perpindahan shot, dengan puncak kilatan tepat di potongan (bukan setelahnya). Suara kilat (flash) juga hanya di transisi.
+- SFX saat caption muncul harus pendek, halus, cepat (pakai `fade` di SFX_CUES, tick kecil). Suara panjang/keras hanya untuk transisi. SFX flicker disesuaikan dengan lama kedip teks (~0,3-0,5 dtk).
+- Caption harus sesuai ucapan persis: kata awal "misalnya narsis lu, peduli setan"; "apa sih" berdiri sendiri, terpisah dari "sakit hati", muncul saat diucapkan (~33,0 dtk).
 
 ## Waktu caption
 SRT hanya punya waktu per baris. Jalankan `python3 scripts/align-words.py` untuk waktu per kata dari audio (`scripts/words.json`). Waktu caption di script.ts sudah dikoreksi dengan ini; kalau ada kata terasa terlalu cepat/lambat, geser `at` kata itu dan cue SFX yang menempel padanya.
@@ -49,3 +51,4 @@ SRT hanya punya waktu per baris. Jalankan `python3 scripts/align-words.py` untuk
 - v4: tambah "peduli setan" dan "alay lu", klip selesai di 34 dtk, jarak antarbaris diperkecil.
 - v5: "apa sih" terlalu cepat, tambah BETUL merah di tengah, DONALD TRUMP harus berkedip, sisanya kreatif (turun ke hitam di akhir).
 - v6: minta versi 9:16 dengan aturan yang sama (composition TimothyClipVertical).
+- v7: caption awal salah (misalnya narsis lu, peduli setan), kilatan cahaya hanya untuk transisi, APA SIH masih terlalu cepat dan harus dipisah dari SAKIT HATI, ingin mencoba mode semua caption tampil, SFX caption harus pendek dan halus, SFX flicker dipendekkan.
