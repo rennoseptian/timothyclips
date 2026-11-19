@@ -1,10 +1,10 @@
 """Bangun src/script.ts (semua keputusan edit) untuk klip p1t-074cn38.
 
-Semua ucapan jadi caption bergerak (bukan hanya kata penting). Waktu kata dari scripts/words.json
-(hasil scripts/align-words.py). Edit teks/penekanan di PHRASES, ukuran bingkai di SHOTS, lalu jalankan:
-    python3 scripts/build-edit.py
-Notasi teks caption:  baris dipisah " / ".  *KATA* = kata penting (putih, condensed, sedang)
-**KATA** = kata besar (putih)   ^KATA^ = hero merah raksasa di BELAKANG subjek.  Sisanya teks kecil.
+Semua ucapan jadi typography Montserrat: kata muncul SATU PER SATU (waktu tiap kata dari scripts/words.json),
+tiap kata dari arah berbeda, 1-2 kata sebelumnya mengabur saat kata baru masuk, lalu semuanya menyatu jadi satu
+lockup. Edit teks/penekanan di PHRASES, ukuran bingkai di SHOTS, lalu jalankan: python3 scripts/build-edit.py
+Notasi teks:  baris dipisah " / ".  *KATA* = kata penting (sedang)  **KATA** = kata kunci besar
+^KATA^ = hero merah raksasa di BELAKANG subjek.  Sisanya teks kecil (label).
 """
 import json
 import re
@@ -14,7 +14,8 @@ from PIL import ImageFont
 START = 2.0            # detik di video sumber tempat klip dimulai ("Ini salah satu quotes...")
 END = 42.58            # selesai setelah "...enggak akan pernah siap." (jeda sesudahnya)
 FPS = 24
-HV = ImageFont.truetype("public/Fonts/Coolvetica Hv Comp.otf", 1000)
+MB = ImageFont.truetype("public/Fonts/Montserrat-Black.ttf", 1000)
+LS = {"s": 0.16, "m": 0.0, "l": -0.01, "h": -0.01}  # letter-spacing per jenis (em), harus sama dengan Captions.tsx
 
 # ---------------- KAMERA: (dari, sampai, zoom awal, zoom akhir, posisi wajah x, y, blur) ----------------
 # wide 1.0 | MCU 1.35-1.5 | CU 1.55-1.9 | ECU ~2.0. Zoom pelan saja, tanpa goyang.
@@ -47,9 +48,8 @@ PHRASES = [
     ([3], "yang gua *LUPA* ya"),
     ([4], "siapa yang / **BIKIN**"),
     ([5, 6], "Cuman ini / **MENGUBAH** / **HIDUP GUA**"),
-    ([7], "I'm the / ^CAPTAIN OF^"),
-    ([8], "my / ^SOUL^ / and the"),
-    ([9], "^MASTER^ / of my faith"),
+    ([7, 8, 9], "I'm the / ^CAPTAIN^ / **OF MY SOUL**", (0, 6)),
+    ([7, 8, 9], "and the / ^MASTER^ / **OF MY FAITH**", (6, 12)),
     ([10], "Artinya / **APA?**"),
     ([11], "Gua adalah / *KAPTEN* dari"),
     ([12], "*JIWA* gua sendiri,"),
@@ -82,7 +82,6 @@ PHRASES = [
     ([48], "lu enggak akan pernah"),
     ([49], "^SIAP.^"),
 ]
-LEAK_CUTS = [(4.04, 1.05, 0.30, "flash"), (25.60, 2.1, 0.26, "oldFlash"), (39.62, 3.15, 0.28, "flash")]
 
 # ---------------- bangun frasa otomatis dari words.json ----------------
 words = [w for w in json.load(open("scripts/words.json")) if not w.get("x") and w["t1"] > START]
@@ -100,89 +99,77 @@ auto = [None, None] + auto[2:] if False else auto  # indeks di PHRASES dihitung 
 # frasa 0 dan 1 (sebelum START) sudah terbuang oleh filter; geser indeks
 OFFSET = 2  # jumlah frasa otomatis sebelum START pada daftar lengkap tak berfilter
 
-def seg_parse(line):
-    segs = []
+def parse_line(line):
+    """Pecah satu baris DSL menjadi daftar (kata, jenis); span multi-kata dipecah per kata."""
+    toks = []
     for m in re.finditer(r"\^([^^]+)\^|\*\*([^*]+)\*\*|\*([^*]+)\*|([^*^]+)", line):
-        if m.group(1):
-            segs.append(("h", m.group(1)))
-        elif m.group(2):
-            segs.append(("l", m.group(2)))
-        elif m.group(3):
-            segs.append(("m", m.group(3)))
-        elif m.group(4).strip():
-            segs.append(("s", m.group(4).strip()))
-    return segs
+        kind, span = ("h", m.group(1)) if m.group(1) else ("l", m.group(2)) if m.group(2) else ("m", m.group(3)) if m.group(3) else ("s", m.group(4))
+        for w in span.split():
+            toks.append((w, kind))
+    return toks
 
+norm = lambda t: re.sub(r"[^a-z0-9']", "", t.lower())
 caps = []
-for idxs, text in PHRASES:
-    ph = [auto[i - OFFSET] for i in idxs]
-    ws = [w for p in ph for w in p]
-    at, t1 = ws[0]["t0"] - START, ws[-1]["t1"] - START
-    # kata dalam teks harus sama dengan kata yang diucapkan
-    said = re.sub(r"[^a-z0-9' ]", "", " ".join(w["w"] for w in ws).lower())
-    shown = re.sub(r"[^a-z0-9' ]", "", re.sub(r"[*^/]", " ", text).lower())
-    assert " ".join(said.split()) == " ".join(shown.split()), (idxs, said, shown)
-    lines = [seg_parse(l.strip()) for l in text.split(" / ")]
-    behind = any(k == "h" for l in lines for k, _ in l)
-    caps.append({"at": round(max(at, 0.0), 2), "t1": round(t1, 2), "lines": lines, "behind": behind})
+for entry in PHRASES:
+    idxs, text = entry[0], entry[1]
+    ws = [w for i in idxs for w in auto[i - OFFSET]]
+    if len(entry) > 2:
+        ws = ws[entry[2][0]:entry[2][1]]
+    lines = [parse_line(l.strip()) for l in text.split(" / ")]
+    flat = [t for l in lines for t in l]
+    assert len(flat) == len(ws) and all(norm(a) == norm(b["w"]) for (a, _), b in zip(flat, ws)), (idxs, [a for a, _ in flat], [b["w"] for b in ws])
+    k = 0
+    out_lines = []
+    for l in lines:
+        row = []
+        for w, kind in l:
+            word = ws[k]; k += 1
+            row.append({"t": w.rstrip(".,?!") if kind != "s" else w, "k": kind, "at": round(max(word["t0"] - START, 0.0), 2),
+                        "w": round(MB.getlength(w.upper()) / 1000 + LS[kind] * len(w), 3)})
+        out_lines.append(row)
+    caps.append({"at": out_lines[0][0]["at"], "t1": round(ws[-1]["t1"] - START, 2), "lines": out_lines,
+                 "behind": any(x["k"] == "h" for r in out_lines for x in r)})
 
 for i, c in enumerate(caps):
     nxt = caps[i + 1]["at"] if i + 1 < len(caps) else 40.58
     c["end"] = round(min(max(c["t1"] + 0.45, c["at"] + 0.55), nxt + 0.12, 40.58), 2)
-
 for i, c in enumerate(caps[:-1]):
     if c["behind"] and caps[i + 1]["behind"]:
         c["end"] = round(min(c["end"], caps[i + 1]["at"]), 2)  # teks belakang berurutan tidak boleh bertumpuk
 
-ANIMS = ["up", "side", "zoom", "down", "side", "up"]
-HERO_ANIMS = ["track", "zoom", "wipe"]
-FLICK = {"^DEPRESI,^", "^SEDIH,^", "^SIAP.^"}
-
-def ts_seg(k, t):
-    d = f'{{ k: "{k}", t: {json.dumps(t, ensure_ascii=False)}'
-    if k == "h":
-        d += f', w: {HV.getlength(t.upper()) / 1000:.3f}'
-    return d + " }"
+FLICK = {"DEPRESI", "SEDIH", "SIAP"}
+def ts_word(x):
+    return f'{{ t: {json.dumps(x["t"], ensure_ascii=False)}, k: "{x["k"]}", at: {x["at"]}, w: {x["w"]} }}'
 
 out = []
-ai = hi = 0
-for i, c in enumerate(caps):
-    if c["behind"]:
-        anim = HERO_ANIMS[hi % 3]; hi += 1
-    else:
-        anim = ANIMS[ai % len(ANIMS)]; ai += 1
-    flick = any(("^" + t + "^") in FLICK for l in c["lines"] for k, t in l if k == "h")
-    lines = ", ".join("[" + ", ".join(ts_seg(k, t) for k, t in l) + "]" for l in c["lines"])
-    out.append(f'  {{ at: {c["at"]}, end: {c["end"]}, anim: "{anim}", behind: {str(c["behind"]).lower()}'
-               f'{", flicker: true" if flick else ""}, lines: [{lines}] }},')
+for c in caps:
+    flick = any(x["t"].upper() in FLICK for r in c["lines"] for x in r if x["k"] == "h")
+    lines = ", ".join("[" + ", ".join(ts_word(x) for x in r) + "]" for r in c["lines"])
+    out.append(f'  {{ at: {c["at"]}, end: {c["end"]}, behind: {str(c["behind"]).lower()}{", flicker: true" if flick else ""}, lines: [{lines}] }},')
 
 shots = "\n".join(f"  {{ from: {a}, to: {b}, s: [{s0}, {s1}], px: {px}, py: {py}, blur: {bl} }}," for a, b, s0, s1, px, py, bl in SHOTS)
-leaks = "\n".join(f"  {{ at: {round(t - 0.27, 2)}, offset: {off}, dur: 0.65, opacity: {op} }}," for t, off, op, _ in LEAK_CUTS)
 
-# ---------------- SFX otomatis: tick halus untuk caption, whoosh di potongan, flash hanya di transisi ----------------
+# ---------------- SFX otomatis ----------------
+# tick halus HANYA di kata kunci (bukan tiap kata); glitch/digital pendek untuk hero; whoosh/focus di potongan shot
 ticks = ["tickA", "tickD", "tickB", "tickF", "tickC", "tickE"]
-cues = []
-n = 0
+cues, n, last = [], 0, -9.0
 for c in caps:
-    big = any(k in ("m", "l", "h") for l in c["lines"] for k, _ in l)
-    if c["behind"]:
-        cues.append((c["at"], "glitch" if n % 2 == 0 else "digital", 1.0 + 0.05 * (n % 3), 0.7, 0.3 if n % 2 == 0 else 0.4))
-        n += 1
-    elif big:
-        k = ticks[n % len(ticks)]
-        cues.append((c["at"], k, [1.0, 1.08, 0.95, 1.12][n % 4], 1.0, 0.2))
-        n += 1
-for j, (a, b, *_rest) in enumerate(SHOTS[1:], 1):
-    if any(abs(a - t) < 0.01 for t, *_ in LEAK_CUTS):
-        continue
+    for r in c["lines"]:
+        for x in r:
+            if x["k"] in ("m", "l", "h") and x["at"] - last > 0.3:
+                if x["k"] == "h":
+                    cues.append((x["at"], "glitch" if n % 2 == 0 else "digital", 1.0 + 0.05 * (n % 3), 0.7, 0.3 if n % 2 == 0 else 0.4))
+                else:
+                    cues.append((x["at"], ticks[n % len(ticks)], [1.0, 1.08, 0.95, 1.12][n % 4], 1.0, 0.2))
+                n += 1
+                last = x["at"]
+for j, (a, *_r) in enumerate(SHOTS[1:], 1):
     cues.append((round(a - 0.05, 2), "whoosh" if j % 2 else "focus", [1.0, 1.08, 0.92][j % 3], 0.8, 0.45))
-for t, _, _, k in LEAK_CUTS:
-    cues.append((round(t - 0.1, 2), k, 1.0, 1.0, 0.9 if k == "oldFlash" else 0.6))
 cues.append((39.3, "riser", 1.0, 0.8, 0.9))
 cues.sort()
 sfx = "\n".join(f'  {{ at: {a}, k: "{k}", rate: {r}, gain: {g}, fade: {f} }},' for a, k, r, g, f in cues)
 
-HEADER = '''// Edit script untuk klip p1t-074cn38 (dihasilkan oleh scripts/build-edit.py; edit di sana lalu jalankan ulang,
+HEADER = """// Edit script untuk klip p1t-074cn38 (dihasilkan oleh scripts/build-edit.py; edit di sana lalu jalankan ulang,
 // atau edit langsung file ini untuk perubahan kecil). Waktu dalam detik dari awal klip. Tanpa import
 // supaya bisa dibaca skrip lain.
 
@@ -205,22 +192,18 @@ export type Shot = {
   blur: number;
 };
 
-/** s = kecil (regular), m = kata penting (condensed), l = besar, h = hero merah raksasa di belakang subjek (w = lebar em) */
-export type Seg = { k: "s" | "m" | "l" | "h"; t: string; w?: number };
-/** cara masuk: up/down = dari bawah/atas, side = dari tepi layar sisi luar, zoom = mengecil dari besar, track = huruf merapat, wipe = tersingkap */
-export type Anim = "up" | "down" | "side" | "zoom" | "track" | "wipe";
-export type Cap = { at: number; end: number; anim: Anim; behind: boolean; flicker?: boolean; lines: Seg[][] };
-'''
-sfx_lib = '''
+/** kata: s = label kecil, m = kata penting, l = kata kunci besar, h = hero merah di belakang subjek.
+ *  at = detik kata diucapkan, w = lebar dalam em (Montserrat Black, termasuk letter-spacing) */
+export type Word = { t: string; k: "s" | "m" | "l" | "h"; at: number; w: number };
+export type Cap = { at: number; end: number; behind: boolean; flicker?: boolean; lines: Word[][] };
+"""
+sfx_lib = """
 // vol = volume dasar hasil normalisasi loudness tiap file (jangan dinaikkan sembarangan).
 export const SFX_LIB = {
   whoosh: { file: "Sfx/Whoosh click.wav", dur: 0.88, vol: 0.2 },
   focus: { file: "Sfx/normalized/camera-focusing-boost.wav", dur: 1.2, vol: 1 },
-  flash: { file: "Sfx/Camera flash sound effect.mp3", dur: 2.09, vol: 0.28 },
-  oldFlash: { file: "Sfx/freesound_community-old-camera-flash-6800.mp3", dur: 3.82, vol: 0.2 },
   glitch: { file: "Sfx/Glitch click.wav", dur: 0.32, vol: 0.36 },
   digital: { file: "Sfx/Digital Text 03.mp3", dur: 1.28, vol: 1 },
-  scan: { file: "Sfx/scan.mp3", dur: 1.28, vol: 1 },
   riser: { file: "Sfx/Click riser.wav", dur: 3.24, vol: 0.35 },
   tickA: { file: "Sfx/App Click 15.wav", dur: 0.7, vol: 0.45 },
   tickB: { file: "Sfx/Click.wav", dur: 0.44, vol: 0.55 },
@@ -231,13 +214,12 @@ export const SFX_LIB = {
 } as const;
 
 export type SfxKey = keyof typeof SFX_LIB;
-/** fade = lama suara terdengar (dtk) dengan fade-out: caption = tick pendek, transisi = lebih panjang */
+/** fade = lama suara terdengar (dtk) dengan fade-out: kata = tick pendek, potongan shot = lebih panjang */
 export type SfxCue = { at: number; k: SfxKey; rate?: number; gain?: number; fade?: number };
-'''
+"""
 body = (HEADER + "\nexport const SHOTS: Shot[] = [\n" + shots + "\n];\n\nexport const CAPTIONS: Cap[] = [\n" + "\n".join(out)
-        + "\n];\n\n/** kilatan light leak hanya di perpindahan shot; puncaknya (~0,27 dtk setelah mulai) tepat di potongan */\nexport const LEAKS = [\n" + leaks
         + "\n];\n" + sfx_lib + "\nexport const SFX_CUES: SfxCue[] = [\n" + sfx + "\n];\n")
 open("src/script.ts", "w", encoding="utf-8").write(body)
 print(len(caps), "caption,", len(cues), "cue sfx,", len(SHOTS), "shot")
 for c in caps:
-    print(f'{c["at"]:6.2f}-{c["end"]:6.2f} {"B" if c["behind"] else " "} ' + " / ".join(" ".join(t for _, t in l) for l in c["lines"]))
+    print(f'{c["at"]:6.2f}-{c["end"]:6.2f} {"B" if c["behind"] else " "} ' + " / ".join(" ".join(x["t"] for x in r) for r in c["lines"]))
