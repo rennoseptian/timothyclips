@@ -58,3 +58,4 @@ Jalankan ulang: matte (RVM), `python3 scripts/track-face.py` (facetrack.ts; set 
 - v9: kamera disetujui; tipografi v8 ditolak ("slop"). Kembali ke Montserrat, kata-per-kata dengan blur 1-2 kata sebelumnya; tanpa flash overlay/SFX flash; cek full render sebelum kirim preview.
 - v10: klip baru MmU4rSTmI5I (19 dtk), gaya v9 dipertahankan; B-roll ditunda.
 - v10b: user minta versi 4:3: composition `TimothyClip43` memakai kamera/caption 16:9 apa adanya (tanpa perubahan kode lain), sudah dicek penuh.
+- Hero belakang-subjek (16:9 dan 4:3) tidak boleh terpotong tepi bingkai atau kepala: kotak hero dibatasi antara tepi layar dan sisi kepala (Captions.tsx, margin 0.8x lebar wajah). Teks hero jadi lebih kecil, tapi terbaca penuh. 9:16 tidak berubah.
