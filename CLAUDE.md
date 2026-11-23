@@ -14,7 +14,7 @@ Baca file ini dulu. Jangan menjelajah ulang repo tanpa perlu. Semua keputusan ed
 6. Hook "unpushed commits" sering salah (clone dangkal). Verifikasi dengan `git ls-remote --heads origin <branch>` vs `git rev-parse HEAD`. Push: `git -c push.negotiate=true push`.
 
 ## Klip aktif
-Sumber `public/Video/MmU4rSTmI5I-4.07-4.26.mp4` (19 dtk, 1080p, 24 fps, satu kamera statis) + `public/Caption/MmU4rSTmI5I-4.07-4.26.srt` (user: SRT sudah final). Klip final = seluruh video (0-19.0 dtk, 456 frame; START=0). Audio berhenti setelah "...yang ngeri." (~18.6 dtk); kalimat "Uang itu bisa selalu dicari lagi" ada di SRT tapi tidak terucap, jadi dibuang dari caption (builder memotongnya). Dua composition: `TimothyClip` (16:9) dan `TimothyClipVertical` (9:16). Branch kerja: `clip3`. Klip lama (p1t, Montserrat v9) ada di riwayat git `clip2`.
+Sumber `public/Video/MmU4rSTmI5I-4.07-4.26.mp4` (19 dtk, 1080p, 24 fps, satu kamera statis) + `public/Caption/MmU4rSTmI5I-4.07-4.26.srt` (user: SRT sudah final). Klip final = seluruh video (0-19.0 dtk, 456 frame; START=0). Audio berhenti setelah "...yang ngeri." (~18.6 dtk); kalimat "Uang itu bisa selalu dicari lagi" ada di SRT tapi tidak terucap, jadi dibuang dari caption (builder memotongnya). Tiga composition: `TimothyClip` (16:9), `TimothyClip43` (4:3, 1440x1080) dan `TimothyClipVertical` (9:16). Branch kerja: `clip3`. Klip lama (p1t, Montserrat v9) ada di riwayat git `clip2`.
 B-roll anime di `public/BrollFootage/` BELUM dipakai (user masih mencari B-roll anime/film lain; jangan dipakai sebelum diminta).
 
 ## Matte subjek (untuk teks di belakang orang)
@@ -57,3 +57,4 @@ Jalankan ulang: matte (RVM), `python3 scripts/track-face.py` (facetrack.ts; set 
 - v8 (klip baru p1t): strategi berubah: semua caption jadi motion seperti referensi, gerak masuk bervariasi (termasuk dari samping), sebagian caption di belakang subjek seperti screenshot referensi.
 - v9: kamera disetujui; tipografi v8 ditolak ("slop"). Kembali ke Montserrat, kata-per-kata dengan blur 1-2 kata sebelumnya; tanpa flash overlay/SFX flash; cek full render sebelum kirim preview.
 - v10: klip baru MmU4rSTmI5I (19 dtk), gaya v9 dipertahankan; B-roll ditunda.
+- v10b: user minta versi 4:3: composition `TimothyClip43` memakai kamera/caption 16:9 apa adanya (tanpa perubahan kode lain), sudah dicek penuh.
