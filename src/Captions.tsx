@@ -53,7 +53,7 @@ const CapView: React.FC<{ cap: Cap; index: number }> = ({ cap, index }) => {
   if (cap.behind) {
     const shift = vertical ? 0 : (0.5 - fx) * 1.5 * W;
     const width = W * 0.94;
-    const cy = vertical ? H * 0.11 : Math.min(H * 0.45, Math.max(H * 0.2, cam.face.y - H * 0.06));
+    const cy = vertical ? Math.max(H * 0.06, Math.min(H * 0.14, (cam.face.y - 0.8 * cam.face.w) * 0.5)) : Math.min(H * 0.45, Math.max(H * 0.2, cam.face.y - H * 0.06));
     box = { left: W / 2 + shift - width / 2, width, top: cy - H * 0.3, height: H * 0.6 };
   } else if (side === "B") {
     const cy = vertical ? H * (0.76 + [0, 0.04, -0.03][index % 3]) : H * 0.8;

@@ -15,7 +15,7 @@ export const MyComposition = () => {
       <Composition
         id="TimothyClip"
         component={MyComponent}
-        durationInFrames={974}
+        durationInFrames={DURATION_FRAMES}
         fps={24}
         width={1920}
         height={1080}
@@ -24,7 +24,7 @@ export const MyComposition = () => {
       <Composition
         id="TimothyClipVertical"
         component={MyComponent}
-        durationInFrames={974}
+        durationInFrames={DURATION_FRAMES}
         fps={24}
         width={1080}
         height={1920}
