@@ -17,9 +17,10 @@ import sys
 
 import numpy as np
 
-VIDEO = sys.argv[1] if len(sys.argv) > 1 else "public/Video/77k-ugH5yF0-1.37.16-1.37.50.mp4"
-SRT = sys.argv[2] if len(sys.argv) > 2 else "public/Caption/77k-ugH5yF0-1.37.16-1.37.50.srt"
-OUT = sys.argv[3] if len(sys.argv) > 3 else "scripts/words.json"
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+VIDEO = ARGS[0] if len(ARGS) > 0 else "public/Video/p1t-074cn38-6.14-6.57.mp4"
+SRT = ARGS[1] if len(ARGS) > 1 else "public/Caption/p1t-074cn38-6.14-6.57.srt"
+OUT = ARGS[2] if len(ARGS) > 2 else "scripts/words.json"
 
 SR = 22050
 HOP = int(0.01 * SR)
@@ -87,24 +88,62 @@ def to_s(s):
     return int(h) * 3600 + int(m) * 60 + int(sec) + int(ms) / 1000
 
 
-words = []
-for block in re.split(r"\n\n+", open(SRT, encoding="utf-8").read().replace("\r", "").strip()):
-    lines = block.split("\n")
-    a, b = (to_s(p) for p in lines[1].split("-->"))
-    toks = " ".join(lines[2:]).split()
+def place(toks, a, b, out, skip=False):
+    """Bagi kata di rentang [a, b] menurut suku kata pada bagian yang bersuara."""
     if not toks:
-        continue
+        return
     syl = np.array([syllables(t) for t in toks], dtype=float)
     cs = np.concatenate([[0], np.cumsum(syl)]) / syl.sum()
     v0, v1 = V(a), V(b)
     for i, t in enumerate(toks):
         t0 = Vinv(v0 + (v1 - v0) * cs[i]) if v1 - v0 > 0.05 else a + (b - a) * cs[i]
         t1 = Vinv(v0 + (v1 - v0) * cs[i + 1]) if v1 - v0 > 0.05 else a + (b - a) * cs[i + 1]
-        words.append({"w": t, "t0": round(max(t0, a - 0.05), 3), "t1": round(min(max(t1, t0 + 0.04), b + 0.05), 3)})
+        w = {"w": t, "t0": round(max(t0, a - 0.05), 3), "t1": round(min(max(t1, t0 + 0.04), b + 0.05), 3)}
+        if skip:
+            w["x"] = 1  # di luar klip final (sebelum 'video start' atau sesudah 'selesai')
+        out.append(w)
+
+
+def longest_gap(a, b, min_len=0.15, thr=-50.0):
+    """Jeda (diam) terpanjang di dalam [a, b], langsung dari amplop dB."""
+    i0, i1 = int(a * 100), min(int(b * 100), len(db))
+    best, start = None, None
+    for i in range(i0, i1 + 1):
+        quiet = i < i1 and db[i] < thr
+        if quiet and start is None:
+            start = i
+        if not quiet and start is not None:
+            g = (start * 0.01, i * 0.01)
+            if g[1] - g[0] >= min_len and (best is None or g[1] - g[0] > best[1] - best[0]):
+                best = g
+            start = None
+    return best
+
+
+words = []
+for block in re.split(r"\n\n+", open(SRT, encoding="utf-8").read().replace("\r", "").strip()):
+    lines = block.split("\n")
+    a, b = (to_s(p) for p in lines[1].split("-->"))
+    text = " ".join(lines[2:])
+    m = re.search(r"\((video start[^)]*|selesai[^)]*)\)", text)
+    if m:
+        pre = re.sub(r"\([^)]*\)", " ", text[: m.start()]).split()
+        post = re.sub(r"\([^)]*\)", " ", text[m.end():]).split()
+        gap = longest_gap(a, b)
+        if gap is None:
+            gap = (a + (b - a) * len(pre) / max(1, len(pre) + len(post)),) * 2
+        start_marker = m.group(1).startswith("video start")
+        # kata sebelum penanda mengisi bagian sebelum jeda terpanjang, sesudahnya bagian sesudah jeda
+        place(pre, a, gap[0], words, skip=start_marker)
+        place(post, gap[1], b, words, skip=not start_marker)
+        continue
+    toks = re.sub(r"\([^)]*\)", " ", text).split()
+    if toks:
+        place(toks, a, b, words)
 
 with open(OUT, "w") as f:
     json.dump(words, f, ensure_ascii=False, indent=0)
 print(f"{len(words)} kata -> {OUT}")
 if "--print" in sys.argv:
     for w in words:
-        print(f"{w['t0']:6.2f} {w['t1']:6.2f}  {w['w']}")
+        print(f"{w['t0']:6.2f} {w['t1']:6.2f}  {w['w']}{'  [di luar klip]' if w.get('x') else ''}")

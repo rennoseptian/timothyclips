@@ -4,240 +4,164 @@ import {
   AbsoluteFill,
   Easing,
   Sequence,
-  interpolate,
   staticFile,
   useCurrentFrame,
   useDelayRender,
   useVideoConfig,
 } from "remotion";
-import { CAPTIONS_ALL } from "./captions-all";
-import { CAPTIONS, CapEvent, CapLine } from "./script";
+import { cameraAt } from "./Camera";
+import { CAPTIONS, Cap, Word } from "./script";
 
-// Caption hanya untuk kata penting. Kata muncul bertumpuk: baris pengantar kecil, lalu kata kunci
-// besar. Baris lama meredup dan blur saat baris baru masuk. Kata puncak boleh berkedip.
+// Typography Montserrat Black. Tiap frasa = satu "lockup": kata muncul SATU PER SATU saat diucapkan,
+// masing-masing dari arah berbeda, 1-2 kata sebelumnya mengabur ketika kata baru masuk, lalu semuanya
+// menjadi fokus lagi sebagai satu kesatuan. Hierarki: label kecil, kata penting, kata kunci besar,
+// hero merah raksasa di BELAKANG subjek. Posisi otomatis menghindari wajah.
+
+const RED = "#e5160f";
+const FPS = 24;
+const FLICKER = [0, 1, 0.2, 1, 0.35, 1, 0.1, 1, 0.6, 0.25, 1, 0.5, 1, 1];
+// harus sama dengan LS di scripts/build-edit.py
+const LS: Record<Word["k"], number> = { s: 0.16, m: 0, l: -0.01, h: -0.01 };
+const DIRS: ("up" | "left" | "down" | "right" | "zoom")[] = ["up", "left", "down", "right", "zoom"];
 
 const useCaptionFonts = () => {
   const { delayRender, continueRender, cancelRender } = useDelayRender();
   const [handle] = useState(() => delayRender("Memuat font caption"));
   useEffect(() => {
-    Promise.all([
-      loadFont({ family: "CoolveticaRg", url: staticFile("Fonts/Coolvetica Rg.otf") }),
-      loadFont({ family: "CoolveticaHv", url: staticFile("Fonts/Coolvetica Hv Comp.otf") }),
-    ])
+    loadFont({ family: "MontserratBlack", url: staticFile("Fonts/Montserrat-Black.ttf") })
       .then(() => continueRender(handle))
       .catch((e) => cancelRender(e));
   }, [handle, continueRender, cancelRender]);
 };
 
-const kindStyle = (kind: CapLine["kind"], k = 1): React.CSSProperties => {
-  if (kind === "soft") {
-    return { fontFamily: "CoolveticaRg, sans-serif", fontSize: 66 * k, lineHeight: 1.0, letterSpacing: 0.5 };
-  }
-  return {
-    fontFamily: "CoolveticaHv, sans-serif",
-    fontSize: (kind === "huge" ? 250 : 184) * k,
-    // tinggi huruf kapital font ini 0.664em; 0.76 menyisakan jarak terlihat ~0.10em antarbaris
-    lineHeight: 0.76,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  };
-};
+const ramp = (v: number, dur: number) => Math.min(1, Math.max(0, v / dur));
+const ease = (v: number, dur: number) => Easing.out(Easing.cubic)(ramp(v, dur));
 
-// pola kedip (opacity per frame) saat kata muncul
-const FLICKER = [0, 1, 0.2, 1, 0.35, 1, 0.1, 1, 0.6, 0.25, 1, 0.5, 1, 1];
-
-const LineView: React.FC<{
-  line: CapLine;
-  startFrame: number;
-  nextFrame: number | null;
-  k: number;
-  vertical: boolean;
-}> = ({ line, startFrame, nextFrame, k, vertical }) => {
+const CapView: React.FC<{ cap: Cap; index: number }> = ({ cap, index }) => {
   const frame = useCurrentFrame();
-  const age = frame - startFrame;
-  const soft = line.kind === "soft";
-  const flick = line.flicker && age >= 0 && age < FLICKER.length;
-
-  const dim =
-    nextFrame === null
-      ? 0
-      : interpolate(frame, [nextFrame, nextFrame + 6], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        });
-
-  return (
-    <div
-      style={{
-        ...kindStyle(line.kind, k),
-        color: line.color === "red" ? "#ff2b2b" : "#ffffff",
-        textShadow:
-          line.color === "red"
-            ? "0 0 10px rgba(255,43,43,0.55), 0 0 30px rgba(255,43,43,0.28), 0 4px 22px rgba(0,0,0,0.5)"
-            : undefined,
-        opacity:
-          (line.flicker
-            ? interpolate(age, [0, 1], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
-            : interpolate(age, [0, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })) *
-          (flick ? FLICKER[age] : 1) *
-          (1 - dim * (soft ? 0.35 : 0.3)),
-        filter: `blur(${
-          interpolate(age, [0, 8], [soft ? 6 : 14, 0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: Easing.out(Easing.cubic),
-          }) +
-          dim * (soft ? 2.5 : 3)
-        }px)`,
-        scale:
-          line.color === "red"
-            ? interpolate(age, [0, 5, 9, 14], [1.28, 0.97, 1.025, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-                easing: Easing.out(Easing.cubic),
-              })
-            : interpolate(age, [0, 9], [soft ? 1.04 : line.kind === "huge" ? 1.22 : 1.14, 1], {
-                extrapolateLeft: "clamp",
-                extrapolateRight: "clamp",
-                easing: Easing.out(Easing.cubic),
-              }),
-        translate: `${flick ? Math.sin(age * 12.9898) * 5 : 0}px ${interpolate(
-          age,
-          [0, 9],
-          [soft ? 10 : 22, 0],
-          { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic) }
-        )}px`,
-        transformOrigin: line.color === "red" || vertical ? "50% 50%" : "0% 50%",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {line.text}
-    </div>
-  );
-};
-
-const EventView: React.FC<{ ev: CapEvent; lift: boolean }> = ({ ev, lift }) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames, width, height } = useVideoConfig();
-  const vertical = height > width;
+  const { width: W, height: H, durationInFrames } = useVideoConfig();
+  const vertical = H > W;
   const k = vertical ? 0.8 : 1;
-  const firstAt = ev.lines[0].at;
-  const starts = ev.lines.map((l) => Math.round((l.at - firstAt) * fps));
-  const exit = interpolate(frame, [durationInFrames - 7, durationInFrames], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.in(Easing.cubic),
+  const cam = cameraAt(cap.at + 0.15, W, H);
+  const fx = cam.face.x / W;
+  const fw = cam.face.w / W;
+
+  /* ---------- area dan perataan lockup ---------- */
+  const side: "L" | "R" | "B" = vertical ? "B" : fx < 0.43 ? "R" : fx > 0.57 ? "L" : fw > 0.3 ? "B" : index % 2 ? "L" : "R";
+  let box: { left: number; width: number; top: number; height: number };
+  let align: "start" | "end" | "center" = "center";
+  if (cap.behind) {
+    const shift = vertical ? 0 : (0.5 - fx) * 1.5 * W;
+    const width = W * 0.94;
+    const cy = vertical ? H * 0.11 : Math.min(H * 0.45, Math.max(H * 0.2, cam.face.y - H * 0.06));
+    box = { left: W / 2 + shift - width / 2, width, top: cy - H * 0.3, height: H * 0.6 };
+  } else if (side === "B") {
+    const cy = vertical ? H * (0.76 + [0, 0.04, -0.03][index % 3]) : H * 0.8;
+    box = { left: W * 0.05, width: W * 0.9, top: cy - H * 0.18, height: H * 0.36 };
+  } else {
+    const cy = Math.min(H * 0.78, Math.max(H * 0.24, cam.face.y + [-0.04, 0.08, -0.1, 0.02, 0.12][index % 5] * H));
+    if (side === "R") {
+      const left = Math.min(W - 300, Math.max(W * 0.52, cam.face.x + cam.face.w * 0.7 + 50));
+      box = { left, width: W - 50 - left, top: cy - H * 0.3, height: H * 0.6 };
+      align = "start";
+    } else {
+      const right = Math.max(300, Math.min(W * 0.48, cam.face.x - cam.face.w * 0.7 - 50));
+      box = { left: 50, width: right - 50, top: cy - H * 0.3, height: H * 0.6 };
+      align = "end";
+    }
+  }
+
+  /* ---------- ukuran kata (diskalakan agar tiap baris muat) ---------- */
+  const want = (w: Word) => (w.k === "s" ? 46 : w.k === "m" ? 92 : w.k === "l" ? 132 : 250) * k;
+  const flat: Word[] = cap.lines.flat();
+  const startFrame = Math.round(cap.at * FPS);
+  const fws = flat.map((w) => Math.round(w.at * FPS) - startFrame);
+  const lastFw = Math.max(...fws);
+  const q = ramp(frame - (durationInFrames - 5), 5); // keluar bersama
+  const settle = ease(frame - (lastFw + 8), 8); // semua kata kembali fokus sebagai satu kesatuan
+
+  let flatIdx = 0;
+  const rows = cap.lines.map((line, li) => {
+    const GAP = 0.3;
+    const natural = line.reduce((acc, w, i) => acc + want(w) * (w.w + (i > 0 ? GAP : 0)), 0);
+    const fit = Math.min(1, box.width / natural);
+    return (
+      <div key={li} style={{ display: "flex", alignItems: "baseline", justifyContent: align === "end" ? "flex-end" : align === "start" ? "flex-start" : "center", whiteSpace: "nowrap" }}>
+        {line.map((w, wi) => {
+          const i = flatIdx++;
+          const age = frame - fws[i];
+          if (age < 0) {
+            return <span key={wi} style={{ visibility: "hidden", fontFamily: "MontserratBlack", fontSize: want(w) * fit, letterSpacing: `${LS[w.k]}em`, marginLeft: wi > 0 ? want(w) * fit * GAP : 0 }}>{w.t.toUpperCase()}</span>;
+          }
+          const p = ease(age, 9);
+          const dir = DIRS[(index * 2 + i) % DIRS.length];
+          const off = 90 * k;
+          const dx = dir === "left" ? -off : dir === "right" ? off : 0;
+          const dy = dir === "up" ? off : dir === "down" ? -off : 0;
+          const sc = dir === "zoom" ? 1 + (1 - p) * 0.35 : 1;
+          // 1-2 kata sebelumnya mengabur saat kata baru masuk
+          const a1 = i + 1 < flat.length ? ramp(frame - fws[i + 1], 5) : 0;
+          const a2 = i + 2 < flat.length ? ramp(frame - fws[i + 2], 5) * 0.55 : 0;
+          const defocus = Math.max(a1, a2) * (1 - settle) * (w.k === "s" ? 1 : 0.5);
+          const flick = cap.flicker && w.k === "h" && age < FLICKER.length ? FLICKER[age] : 1;
+          const fs = want(w) * fit;
+          return (
+            <span
+              key={wi}
+              style={{
+                display: "inline-block",
+                fontFamily: "MontserratBlack, sans-serif",
+                fontSize: fs,
+                lineHeight: w.k === "h" ? 0.9 : 1,
+                letterSpacing: `${LS[w.k]}em`,
+                textTransform: "uppercase",
+                color: w.k === "h" ? RED : "#fff",
+                opacity: Math.min(1, age / 3) * flick * (1 - 0.45 * defocus) * (1 - q),
+                filter: `blur(${(1 - p) * 12 + defocus * 7 + q * 10}px)`,
+                translate: `${dx * (1 - p)}px ${dy * (1 - p) - q * 10}px`,
+                scale: String(sc),
+                marginLeft: wi > 0 ? fs * GAP : 0,
+                textShadow: w.k === "h" ? undefined : "0 4px 24px rgba(0,0,0,0.55)",
+              }}
+            >
+              {w.t}
+            </span>
+          );
+        })}
+      </div>
+    );
   });
 
-  const box: React.CSSProperties = vertical
-    ? { left: 40, right: 40, top: lift ? 1130 : 1230, bottom: lift ? 330 : 110, justifyContent: "center", alignItems: "center" }
-    : ev.side === "R"
-      ? { left: 1150, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
-      : ev.side === "L"
-        ? { left: 90, width: 720, top: 0, bottom: 0, justifyContent: "center", paddingBottom: 40, alignItems: "flex-start" }
-        : ev.side === "C"
-          ? { left: 0, right: 0, top: 0, bottom: 0, justifyContent: "center", alignItems: "center" }
-          : { left: 0, right: 0, bottom: 70, justifyContent: "flex-end", alignItems: "center" };
-
   return (
-    <AbsoluteFill
-      name="Caption"
-      style={{
-        opacity: 1 - exit,
-        filter: `blur(${exit * 10}px)`,
-        translate: `0px ${-exit * 14}px`,
-      }}
-    >
+    <AbsoluteFill name={`Caption ${index + 1}`}>
       <div
         style={{
           position: "absolute",
           display: "flex",
           flexDirection: "column",
-          gap: 0,
-          textShadow: "0 6px 30px rgba(0,0,0,0.55)",
-          textAlign: vertical ? "center" : "left",
+          alignItems: align === "end" ? "flex-end" : align === "start" ? "flex-start" : "center",
+          justifyContent: "center",
+          gap: cap.behind ? 6 * k : 2 * k,
           ...box,
         }}
       >
-        {ev.lines.map((l, i) => (
-          <div key={i} style={{ marginTop: i > 0 && l.kind !== "soft" && ev.lines[i - 1].kind === "soft" ? -8 * k : 0 }}>
-            <LineView
-              line={l}
-              startFrame={starts[i]}
-              nextFrame={i + 1 < starts.length ? starts[i + 1] : null}
-              k={k}
-              vertical={vertical}
-            />
-          </div>
-        ))}
+        {rows}
       </div>
     </AbsoluteFill>
   );
 };
 
-// Mode "semua": transkrip lengkap sebagai teks kecil di bawah, cepat dan halus (tanpa blur besar).
-const SubView: React.FC<{ text: string }> = ({ text }) => {
-  const frame = useCurrentFrame();
-  const { durationInFrames, width, height } = useVideoConfig();
-  const vertical = height > width;
-  const out = interpolate(frame, [durationInFrames - 3, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const inn = interpolate(frame, [0, 3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "flex-end",
-        alignItems: "center",
-        paddingBottom: vertical ? 150 : 64,
-        paddingLeft: 40,
-        paddingRight: 40,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "CoolveticaRg, sans-serif",
-          fontSize: vertical ? 50 : 56,
-          letterSpacing: 0.5,
-          color: "#ffffff",
-          textAlign: "center",
-          opacity: Math.min(inn, out) * 0.95,
-          translate: `0px ${(1 - inn) * 8}px`,
-          textShadow: "0 3px 18px rgba(0,0,0,0.65)",
-        }}
-      >
-        {text}
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-export const Captions: React.FC<{ mode: "key" | "all" }> = ({ mode }) => {
+export const Captions: React.FC<{ layer: "behind" | "front" }> = ({ layer }) => {
   useCaptionFonts();
-  const { fps } = useVideoConfig();
-  const all = mode === "all";
   return (
-    <AbsoluteFill name="Caption penting">
-      {all
-        ? CAPTIONS_ALL.map((c, i) => {
-            const from = Math.round(c.at * fps);
-            const to = Math.max(from + 6, Math.round(c.end * fps));
-            return (
-              <Sequence key={`s${i}`} name={`Teks: ${c.text}`} from={from} durationInFrames={to - from}>
-                <SubView text={c.text} />
-              </Sequence>
-            );
-          })
-        : null}
-      {CAPTIONS.map((full, i) => {
-        // mode semua: baris pengantar kecil sudah ada di transkrip, jadi hanya kata penting yang besar
-        const ev = all ? { ...full, lines: full.lines.filter((l) => l.kind !== "soft") } : full;
-        const from = Math.round(ev.lines[0].at * fps);
-        const to = Math.round(ev.end * fps);
+    <AbsoluteFill name={layer === "behind" ? "Caption di belakang subjek" : "Caption depan"}>
+      {CAPTIONS.map((cap, i) => {
+        if (cap.behind !== (layer === "behind")) return null;
+        const from = Math.round(cap.at * FPS);
+        const to = Math.round(cap.end * FPS);
         return (
-          <Sequence key={i} name={`Caption ${i + 1}: ${ev.lines.map((l) => l.text).join(" ")}`} from={from} durationInFrames={to - from}>
-            <EventView ev={ev} lift={all} />
+          <Sequence key={i} name={`Caption ${i + 1}: ${cap.lines.map((l) => l.map((w) => w.t).join(" ")).join(" ")}`} from={from} durationInFrames={Math.max(6, to - from)}>
+            <CapView cap={cap} index={i} />
           </Sequence>
         );
       })}
