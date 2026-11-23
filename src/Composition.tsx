@@ -15,16 +15,25 @@ export const MyComposition = () => {
       <Composition
         id="TimothyClip"
         component={MyComponent}
-        durationInFrames={974}
+        durationInFrames={DURATION_FRAMES}
         fps={24}
         width={1920}
         height={1080}
         defaultProps={{ sfx: true, sfxGain: 1 }}
       />
       <Composition
+        id="TimothyClip43"
+        component={MyComponent}
+        durationInFrames={DURATION_FRAMES}
+        fps={24}
+        width={1440}
+        height={1080}
+        defaultProps={{ sfx: true, sfxGain: 1 }}
+      />
+      <Composition
         id="TimothyClipVertical"
         component={MyComponent}
-        durationInFrames={974}
+        durationInFrames={DURATION_FRAMES}
         fps={24}
         width={1080}
         height={1920}

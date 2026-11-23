@@ -1,7 +1,7 @@
 import { Video } from "@remotion/media";
 import { AbsoluteFill, Easing, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { FACE_TRACK } from "./facetrack";
-import { DURATION_FRAMES, SHOTS, START_FRAME, START_SEC } from "./script";
+import { CAPTIONS, DURATION_FRAMES, SHOTS, START_FRAME, START_SEC } from "./script";
 
 // Kamera digital yang tenang: tiap shot punya bingkai TETAP (berdasarkan posisi wajah median di shot itu)
 // dan hanya zoom-in pelan. Tidak ada sway/tilt/rotasi. Variasi datang dari potongan antar-ukuran.
@@ -10,8 +10,8 @@ import { DURATION_FRAMES, SHOTS, START_FRAME, START_SEC } from "./script";
 
 const SRC_W = 1920;
 const SRC_H = 1080;
-export const VIDEO = "Video/p1t-074cn38-6.14-6.57.mp4";
-export const MATTE = "Video/matte-p1t-074cn38-6.14-6.57.mp4";
+export const VIDEO = "Video/MmU4rSTmI5I-4.07-4.26.mp4";
+export const MATTE = "Video/matte-MmU4rSTmI5I-4.07-4.26.mp4";
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
@@ -39,6 +39,8 @@ export const cameraAt = (t: number, outW: number, outH: number) => {
 
   let s = lerp(shot.s[0], shot.s[1], p); // zoom-in linear, pelan
   if (vertical) s = 1 + (s - 1) * 0.45; // 9:16 sudah memotong sempit, jadi zoom per shot dikecilkan
+  // shot dengan hero di belakang subjek: di 9:16 kepala jangan terlalu besar supaya huruf merah tidak tertutup seluruhnya
+  if (vertical && CAPTIONS.some((c) => c.behind && c.at < shot.to && c.end > shot.from)) s = Math.min(s, 1.12);
   const z = s * base; // skala sumber -> output
   const w = outW / z;
   const h = outH / z;

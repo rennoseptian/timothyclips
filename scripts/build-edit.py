@@ -1,4 +1,4 @@
-"""Bangun src/script.ts (semua keputusan edit) untuk klip p1t-074cn38.
+"""Bangun src/script.ts (semua keputusan edit) untuk klip MmU4rSTmI5I-4.07-4.26.
 
 Semua ucapan jadi typography Montserrat: kata muncul SATU PER SATU (waktu tiap kata dari scripts/words.json),
 tiap kata dari arah berbeda, 1-2 kata sebelumnya mengabur saat kata baru masuk, lalu semuanya menyatu jadi satu
@@ -11,8 +11,8 @@ import re
 
 from PIL import ImageFont
 
-START = 2.0            # detik di video sumber tempat klip dimulai ("Ini salah satu quotes...")
-END = 42.58            # selesai setelah "...enggak akan pernah siap." (jeda sesudahnya)
+START = 0.0            # klip MmU4rSTmI5I: seluruh video 19 dtk dipakai
+END = 19.0             # akhir klip; ucapan berakhir di "...yang ngeri." (~18.6 dtk)
 FPS = 24
 MB = ImageFont.truetype("public/Fonts/Montserrat-Black.ttf", 1000)
 LS = {"s": 0.16, "m": 0.0, "l": -0.01, "h": -0.01}  # letter-spacing per jenis (em), harus sama dengan Captions.tsx
@@ -20,71 +20,45 @@ LS = {"s": 0.16, "m": 0.0, "l": -0.01, "h": -0.01}  # letter-spacing per jenis (
 # ---------------- KAMERA: (dari, sampai, zoom awal, zoom akhir, posisi wajah x, y, blur) ----------------
 # wide 1.0 | MCU 1.35-1.5 | CU 1.55-1.9 | ECU ~2.0. Zoom pelan saja, tanpa goyang.
 SHOTS = [
-    (0.00, 2.11, 1.00, 1.05, 0.50, 0.44, 0),
-    (2.11, 4.04, 1.35, 1.45, 0.36, 0.42, 12),
-    (4.04, 6.80, 1.70, 1.85, 0.38, 0.42, 12),
-    (6.80, 8.07, 1.00, 1.04, 0.50, 0.44, 10),
-    (8.07, 10.03, 1.40, 1.50, 0.64, 0.42, 12),
-    (10.03, 12.21, 1.55, 1.65, 0.36, 0.42, 10),
-    (12.21, 14.56, 1.80, 1.95, 0.62, 0.40, 12),
-    (14.56, 16.74, 1.00, 1.06, 0.50, 0.44, 10),
-    (16.74, 19.08, 1.75, 1.90, 0.38, 0.42, 12),
-    (19.08, 20.49, 1.00, 1.04, 0.50, 0.44, 10),
-    (20.49, 22.34, 1.60, 1.70, 0.62, 0.42, 12),
-    (22.34, 25.60, 1.35, 1.45, 0.64, 0.42, 10),
-    (25.60, 27.34, 1.70, 1.80, 0.38, 0.42, 14),
-    (27.34, 29.61, 2.00, 2.10, 0.62, 0.40, 14),
-    (29.61, 31.01, 1.00, 1.04, 0.50, 0.44, 10),
-    (31.01, 33.00, 1.40, 1.50, 0.62, 0.42, 12),
-    (33.00, 35.25, 1.55, 1.65, 0.38, 0.42, 12),
-    (35.25, 37.38, 1.00, 1.05, 0.50, 0.44, 10),
-    (37.38, 39.62, 1.40, 1.50, 0.62, 0.42, 12),
-    (39.62, 40.58, 2.00, 2.05, 0.40, 0.40, 14),
+    (0.00, 1.08, 1.40, 1.48, 0.62, 0.42, 0),
+    (1.08, 3.72, 1.00, 1.05, 0.50, 0.44, 10),
+    (3.72, 5.61, 1.60, 1.70, 0.38, 0.42, 12),
+    (5.61, 7.55, 1.35, 1.45, 0.64, 0.42, 12),
+    (7.55, 9.32, 1.75, 1.90, 0.62, 0.40, 12),
+    (9.32, 12.06, 1.00, 1.05, 0.50, 0.44, 10),
+    (12.06, 14.16, 1.75, 1.90, 0.38, 0.40, 12),
+    (14.16, 15.60, 1.00, 1.04, 0.50, 0.44, 10),
+    (15.60, 17.68, 1.70, 1.85, 0.62, 0.42, 12),
+    (17.68, END, 2.00, 2.10, 0.38, 0.40, 14),
 ]
 
 # ---------------- CAPTION: (indeks frasa otomatis yang digabung, teks) ----------------
 PHRASES = [
-    ([2], "Ini salah satu / *QUOTES*"),
-    ([3], "yang gua *LUPA* ya"),
-    ([4], "siapa yang / **BIKIN**"),
-    ([5, 6], "Cuman ini / **MENGUBAH** / **HIDUP GUA**"),
-    ([7, 8, 9], "I'm the / ^CAPTAIN^ / **OF MY SOUL**", (0, 6)),
-    ([7, 8, 9], "and the / ^MASTER^ / **OF MY FAITH**", (6, 12)),
-    ([10], "Artinya / **APA?**"),
-    ([11], "Gua adalah / *KAPTEN* dari"),
-    ([12], "*JIWA* gua sendiri,"),
-    ([13, 14], "ya dan *MASTER,* ya."),
-    ([15, 16], "Master dari / ^TAKDIR^ / gua sendiri."),
-    ([17], "**HANYA GUA** / yang bisa"),
-    ([18, 19], "tentuin / *TAKDIR* gua sendiri."),
-    ([20], "Ini kayak kayak / *KITA*"),
-    ([21, 22], "hidup ini / ^DI KAPAL^ / gitu loh."),
-    ([23], "^KITA YANG SETIR,^"),
-    ([24], "kita **NAHKODANYA**"),
-    ([25], "Memang kadang / bisa ada"),
-    ([26, 27], "^BADAI,^ / tapi ini kita yang"),
-    ([28, 29], "*DECIDE* kita mau ke mana."),
-    ([30], "Lu bisa *PILIH* gitu,"),
-    ([31], "besok lu mau / **BANGUN**"),
-    ([32], "mau jadi orang / ^SEDIH,^"),
-    ([33], "mau jadi / **BAHAGIA,**"),
-    ([34], "mau jadi orang / ^DEPRESI,^"),
-    ([35], "mau jadi orang / **SUKSES,**"),
-    ([36], "itu semua *CUMAN* ada"),
-    ([37], "di **PIKIRAN LU.**"),
-    ([38, 39], "Lu sendiri yang bisa / **BIKIN ITU.**"),
-    ([40], "Saran gua / *JANGAN PERNAH*"),
-    ([41, 42], "**NUNGGU** untuk lu siap, ya,"),
-    ([43], "untuk melakukan hal-hal"),
-    ([44, 45], "*APAPUN,* ya."),
-    ([46], "Jangan pernah / **NUNGGU**"),
-    ([47], "sampai lu siap karena"),
-    ([48], "lu enggak akan pernah"),
-    ([49], "^SIAP.^"),
+    ([0], "Gua enggak pernah / ^TAKUT^"),
+    ([1], "ibaratnya sama / *ORANG* yang"),
+    ([2], "seumur hidupnya / *HIDUPNYA*"),
+    ([3], "selalu / **GAMPANG.**"),
+    ([4, 5], "Ya, dari kecil / dia *GAMPANG,*"),
+    ([6, 7], "dia besar hidupnya itu / **GAMPANG.**"),
+    ([8, 9], "Orang seperti itu enggak / ^NGERI.^"),
+    ([10], "Orang **NGERI** / adalah orang"),
+    ([11], "yang *HIDUPNYA* / ini sudah"),
+    ([12], "mau / **DIHANCURIN** / sama"),
+    ([13], "berbagai macam / **CARA** di"),
+    ([14], "dunia lalu / dia **TETAP**"),
+    ([15], "^BERDIRI,^"),
+    ([16], "dia tetap / **JALAN.**"),
+    ([17, 18, 19], "Nah, itu orangnya yang gua / **TAKUT,**"),
+    ([20], "itu orang yang / ^NGERI.^"),
 ]
 
 # ---------------- bangun frasa otomatis dari words.json ----------------
 words = [w for w in json.load(open("scripts/words.json")) if not w.get("x") and w["t1"] > START]
+# SRT menyertakan "Uang itu bisa selalu dicari lagi." tetapi audio klip berhenti (hening) setelah "ngeri." (~18.6 dtk):
+# kalimat itu tidak terucap, jadi tidak dijadikan caption (caption harus sesuai ucapan).
+cut = max(i for i, w in enumerate(words) if w["w"] == "ngeri.")
+words = words[:cut + 1]
+words[-1]["t1"] = 18.6
 auto, cur = [], []
 for x in words:
     if cur and (x["t0"] - cur[-1]["t1"] > 0.2 or len(cur) >= 4
@@ -97,7 +71,7 @@ if cur:
     auto.append(cur)
 auto = [None, None] + auto[2:] if False else auto  # indeks di PHRASES dihitung dari frasa ke-0 = "akan hidup lu cuman"
 # frasa 0 dan 1 (sebelum START) sudah terbuang oleh filter; geser indeks
-OFFSET = 2  # jumlah frasa otomatis sebelum START pada daftar lengkap tak berfilter
+OFFSET = 0  # jumlah frasa otomatis sebelum START pada daftar lengkap tak berfilter
 
 def parse_line(line):
     """Pecah satu baris DSL menjadi daftar (kata, jenis); span multi-kata dipecah per kata."""
@@ -131,13 +105,13 @@ for entry in PHRASES:
                  "behind": any(x["k"] == "h" for r in out_lines for x in r)})
 
 for i, c in enumerate(caps):
-    nxt = caps[i + 1]["at"] if i + 1 < len(caps) else 40.58
-    c["end"] = round(min(max(c["t1"] + 0.45, c["at"] + 0.55), nxt + 0.12, 40.58), 2)
+    nxt = caps[i + 1]["at"] if i + 1 < len(caps) else END
+    c["end"] = round(min(max(c["t1"] + 0.45, c["at"] + 0.55), nxt + 0.12, END), 2)
 for i, c in enumerate(caps[:-1]):
     if c["behind"] and caps[i + 1]["behind"]:
         c["end"] = round(min(c["end"], caps[i + 1]["at"]), 2)  # teks belakang berurutan tidak boleh bertumpuk
 
-FLICK = {"DEPRESI", "SEDIH", "SIAP"}
+FLICK = {"TAKUT"}
 def ts_word(x):
     return f'{{ t: {json.dumps(x["t"], ensure_ascii=False)}, k: "{x["k"]}", at: {x["at"]}, w: {x["w"]} }}'
 
@@ -165,20 +139,20 @@ for c in caps:
                 last = x["at"]
 for j, (a, *_r) in enumerate(SHOTS[1:], 1):
     cues.append((round(a - 0.05, 2), "whoosh" if j % 2 else "focus", [1.0, 1.08, 0.92][j % 3], 0.8, 0.45))
-cues.append((39.3, "riser", 1.0, 0.8, 0.9))
+cues.append((round(END - 1.5, 2), "riser", 1.0, 0.8, 0.9))
 cues.sort()
 sfx = "\n".join(f'  {{ at: {a}, k: "{k}", rate: {r}, gain: {g}, fade: {f} }},' for a, k, r, g, f in cues)
 
-HEADER = """// Edit script untuk klip p1t-074cn38 (dihasilkan oleh scripts/build-edit.py; edit di sana lalu jalankan ulang,
+HEADER = """// Edit script untuk klip MmU4rSTmI5I-4.07-4.26 (dihasilkan oleh scripts/build-edit.py; edit di sana lalu jalankan ulang,
 // atau edit langsung file ini untuk perubahan kecil). Waktu dalam detik dari awal klip. Tanpa import
 // supaya bisa dibaca skrip lain.
 
 export const FPS = 24;
-/** klip final dimulai di detik ini pada video sumber ("Ini salah satu quotes...") */
-export const START_SEC = 2.0;
-export const START_FRAME = 48;
-/** sampai 42.58 dtk video sumber (setelah "...enggak akan pernah siap."): 974 frame */
-export const DURATION_FRAMES = 974;
+/** klip final dimulai di detik ini pada video sumber (seluruh video) */
+export const START_SEC = 0;
+export const START_FRAME = 0;
+/** 19 dtk penuh: 456 frame */
+export const DURATION_FRAMES = 456;
 
 export type Shot = {
   from: number;
