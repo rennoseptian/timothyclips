@@ -13,7 +13,15 @@ Baca file ini dulu. Jangan menjelajah ulang repo tanpa perlu. Semua keputusan ed
 5. Render akhir dilakukan user lewat GitHub Actions "Render video" (memasukkan ID composition; user yang merge PR). Branch kerja: lihat branch terbaru di repo.
 6. Hook "unpushed commits" sering salah (clone dangkal). Verifikasi dengan `git ls-remote --heads origin <branch>` vs `git rev-parse HEAD`. Push: `git -c push.negotiate=true push`.
 
-## Klip aktif
+## Klip Windah Basudara (aktif, branch `windah`)
+Sumber `public/Video/lv_0_20261123215856.mp4` (64.3 dtk, 1080p, 60 fps) + `public/Caption/transkrip (1).srt` (user: final). Composition `WindahClip` (1920x1080, 30 fps, 1929 frame). KAMERA DIAM: footage apa adanya, tanpa zoom/geser/blur potongan. Cerita emosional: Windah terharu karena Agnes menunggu/ketiduran menonton live-nya, "support system".
+- Semua keputusan caption ada di `scripts/build-windah.py` -> `src/windah.ts` (PHRASES by indeks kata di `scripts/words-windah.json`, zona, snap). Renderer: `src/WindahCaptions.tsx`, `src/WindahClip.tsx`, `src/WindahSfx.tsx`. Kode Timothy (Camera/Captions/script.ts) tidak dipakai di klip ini.
+- Gaya: caption kata-per-kata seperti Timothy (arah masuk bervariasi, 1-2 kata sebelumnya blur lalu menyatu) dengan DUA font: Montserrat Black (label kecil) + Coolvetica Hv Comp (kata besar dan hero merah). Kata besar mengisi area kosong halaman web putih (zona R kanan-tengah); di footage orang caption di zona bebas wajah (T atas, TR, L, R2, TT pita tipis atas saat wajah memenuhi bingkai). Teks gelap di adegan terang (daftar `LIGHT` = halaman web), putih + bayangan di adegan gelap; hero merah. Tanpa matte.
+- Adegan terang vs footage ditentukan dari deteksi potongan (ffmpeg scene) + luma; caption dipotong (end) di akhir adegan bertema sama dan dapat di-`snap` ke awal adegan. SRT dipakai apa adanya (pengulangan "apa yang paling bikin gue terharu", "terlepas dari Solo stream" dianggap terucap).
+- SFX hanya tick halus gain rendah di kata besar/hero (audio asli video dominan). Tanpa flash.
+- Kalau user minta versi lain (9:16/4:3): zona dan ukuran perlu dirancang ulang karena footage 16:9 berisi layar web.
+
+## Klip Timothy (arsip; video sudah dihapus dari main)
 Sumber `public/Video/MmU4rSTmI5I-4.07-4.26.mp4` (19 dtk, 1080p, 24 fps, satu kamera statis) + `public/Caption/MmU4rSTmI5I-4.07-4.26.srt` (user: SRT sudah final). Klip final = seluruh video (0-19.0 dtk, 456 frame; START=0). Audio berhenti setelah "...yang ngeri." (~18.6 dtk); kalimat "Uang itu bisa selalu dicari lagi" ada di SRT tapi tidak terucap, jadi dibuang dari caption (builder memotongnya). Dua composition: `TimothyClip` (16:9) dan `TimothyClipVertical` (9:16). Branch kerja: `clip3`. Klip lama (p1t, Montserrat v9) ada di riwayat git `clip2`.
 B-roll anime di `public/BrollFootage/` BELUM dipakai (user masih mencari B-roll anime/film lain; jangan dipakai sebelum diminta).
 
@@ -57,3 +65,4 @@ Jalankan ulang: matte (RVM), `python3 scripts/track-face.py` (facetrack.ts; set 
 - v8 (klip baru p1t): strategi berubah: semua caption jadi motion seperti referensi, gerak masuk bervariasi (termasuk dari samping), sebagian caption di belakang subjek seperti screenshot referensi.
 - v9: kamera disetujui; tipografi v8 ditolak ("slop"). Kembali ke Montserrat, kata-per-kata dengan blur 1-2 kata sebelumnya; tanpa flash overlay/SFX flash; cek full render sebelum kirim preview.
 - v10: klip baru MmU4rSTmI5I (19 dtk), gaya v9 dipertahankan; B-roll ditunda.
+- v11: klip baru Windah Basudara: gaya caption Timothy, kamera diam, font Coolvetica + Montserrat, caption besar di area kosong. Riwayat remote di-reset ("Initial commit"): branch clip2/clip3 lama tidak ada lagi di origin.
