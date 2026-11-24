@@ -33,6 +33,15 @@ export const MyComposition = () => {
         defaultProps={{ sfx: true, sfxGain: 1 }}
       />
       <Composition
+        id="TimothyClip43"
+        component={MyComponent}
+        durationInFrames={DURATION_FRAMES}
+        fps={24}
+        width={1440}
+        height={1080}
+        defaultProps={{ sfx: true, sfxGain: 1 }}
+      />
+      <Composition
         id="TimothyClipVertical"
         component={MyComponent}
         durationInFrames={DURATION_FRAMES}
