@@ -19,6 +19,8 @@ Sumber `public/Video/lv_0_20261123215856.mp4` (64.3 dtk, 1080p, 60 fps) + `publi
 - Gaya: caption kata-per-kata seperti Timothy (arah masuk bervariasi, 1-2 kata sebelumnya blur lalu menyatu) dengan DUA font: Montserrat Black (label kecil) + Coolvetica Hv Comp (kata besar dan hero merah). Kata besar mengisi area kosong halaman web putih (zona R kanan-tengah); di footage orang caption di zona bebas wajah (T atas, TR, L, R2, TT pita tipis atas saat wajah memenuhi bingkai). Teks gelap di adegan terang (daftar `LIGHT` = halaman web), putih + bayangan di adegan gelap; hero merah. Tanpa matte.
 - Adegan terang vs footage ditentukan dari deteksi potongan (ffmpeg scene) + luma; caption dipotong (end) di akhir adegan bertema sama dan dapat di-`snap` ke awal adegan. SRT dipakai apa adanya (pengulangan "apa yang paling bikin gue terharu", "terlepas dari Solo stream" dianggap terucap).
 - SFX hanya tick halus gain rendah di kata besar/hero (audio asli video dominan). Tanpa flash.
+- STATUS: MENUNGGU video Windah baru. User menduga video sumber ada bug/lag sekitar detik 22 karena kompresi tinggi (100 MB -> 21 MB) dan sedang mencari solusinya. JANGAN ubah kode/render apa pun sebelum user mengonfirmasi video sudah beres.
+- FEEDBACK user atas preview v1 Windah (diterapkan nanti): (1) typography berantakan: spasi antar huruf/kata tidak rapat dan mencar ke mana-mana; (2) penonton tidak tahu harus fokus ke tulisan yang mana (tiap caption butuh SATU titik fokus yang jelas, kata lain jelas lebih kecil/redup); (3) tidak ada depth (perlu lapisan/hierarki ukuran, bayangan, blur atau elemen di belakang subjek/halaman, bukan teks datar menempel di atas footage). Arah perbaikan: kerning dan jarak kata dirapatkan, lockup padat dan rata (satu blok), satu kata hero per caption, depth lewat skala/lapisan/bayangan; audit ulang setelah revisi.
 - Kalau user minta versi lain (9:16/4:3): zona dan ukuran perlu dirancang ulang karena footage 16:9 berisi layar web.
 
 ## Klip Timothy (arsip; video sudah dihapus dari main)
@@ -66,3 +68,4 @@ Jalankan ulang: matte (RVM), `python3 scripts/track-face.py` (facetrack.ts; set 
 - v9: kamera disetujui; tipografi v8 ditolak ("slop"). Kembali ke Montserrat, kata-per-kata dengan blur 1-2 kata sebelumnya; tanpa flash overlay/SFX flash; cek full render sebelum kirim preview.
 - v10: klip baru MmU4rSTmI5I (19 dtk), gaya v9 dipertahankan; B-roll ditunda.
 - v11: klip baru Windah Basudara: gaya caption Timothy, kamera diam, font Coolvetica + Montserrat, caption besar di area kosong. Riwayat remote di-reset ("Initial commit"): branch clip2/clip3 lama tidak ada lagi di origin.
+- v11b: Windah v1 ditolak sementara ("berantakan, tidak ada fokus, tidak ada depth"); tunggu video baru sebelum revisi.
