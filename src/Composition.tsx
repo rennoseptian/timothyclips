@@ -2,6 +2,8 @@ import { AbsoluteFill, Composition, interpolate, useCurrentFrame } from "remotio
 import { Camera } from "./Camera";
 import { Captions } from "./Captions";
 import { Sfx } from "./Sfx";
+import { WindahClip } from "./WindahClip";
+import { W_DURATION_FRAMES, W_FPS } from "./windah";
 import { DURATION_FRAMES } from "./script";
 
 type Props = {
@@ -12,6 +14,15 @@ type Props = {
 export const MyComposition = () => {
   return (
     <>
+      <Composition
+        id="WindahClip"
+        component={WindahClip}
+        durationInFrames={W_DURATION_FRAMES}
+        fps={W_FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{ sfx: true, sfxGain: 1 }}
+      />
       <Composition
         id="TimothyClip"
         component={MyComponent}

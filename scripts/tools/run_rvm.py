@@ -1,10 +1,12 @@
 import subprocess, sys, numpy as np, onnxruntime as ort, cv2, time
 SRC, MODEL, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
+# opsional argumen ke-4: segmen detik "a-b,c-d" (hanya segmen ini yang diproses, sisanya hitam) untuk menghemat waktu
+SEGS = [tuple(map(float, x.split("-"))) for x in sys.argv[4].split(",")] if len(sys.argv) > 4 else None
 W, H = 960, 540            # ukuran kerja
 sess = ort.InferenceSession(MODEL, providers=["CPUExecutionProvider"])
 print([i.name for i in sess.get_inputs()], [o.name for o in sess.get_outputs()])
-rd = subprocess.Popen(["ffmpeg","-v","error","-i",SRC,"-vf",f"scale={W}:{H}","-f","rawvideo","-pix_fmt","rgb24","-"],stdout=subprocess.PIPE)
-wr = subprocess.Popen(["ffmpeg","-v","error","-y","-f","rawvideo","-pix_fmt","gray","-s","1920x1080","-r","24","-i","-","-c:v","libx264","-crf","14","-pix_fmt","yuv420p","-preset","veryfast",OUT],stdin=subprocess.PIPE)
+rd = subprocess.Popen(["ffmpeg","-v","error","-i",SRC,"-vf",f"fps=30,scale={W}:{H}","-f","rawvideo","-pix_fmt","rgb24","-"],stdout=subprocess.PIPE)
+wr = subprocess.Popen(["ffmpeg","-v","error","-y","-f","rawvideo","-pix_fmt","gray","-s","1920x1080","-r","30","-i","-","-c:v","libx264","-crf","14","-pix_fmt","yuv420p","-preset","veryfast",OUT],stdin=subprocess.PIPE)
 def zero(): return np.zeros((1,1,1,1),np.float32)
 rec=[zero() for _ in range(4)]
 ratio=np.array([0.5],np.float32)
@@ -13,6 +15,9 @@ while True:
     buf = rd.stdout.read(W*H*3)
     if len(buf) < W*H*3: break
     fr = np.frombuffer(buf,np.uint8).reshape(H,W,3)
+    if SEGS is not None and not any(a <= n / 30 < b for a, b in SEGS):
+        wr.stdin.write(np.zeros((1080,1920),np.uint8).tobytes()); n += 1; prev = None
+        continue
     small = cv2.resize(fr,(64,36)).astype(np.float32)
     if prev is not None and np.abs(small-prev).mean() > 18:   # potongan shot -> reset state
         rec=[zero() for _ in range(4)]
