@@ -10,7 +10,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { cameraAt } from "./Camera";
-import { CAPTIONS, Cap, Word } from "./script";
+import { CAPTIONS, Cap, FPS, Word } from "./script";
 
 // Typography Montserrat Black. Tiap frasa = satu "lockup": kata muncul SATU PER SATU saat diucapkan,
 // masing-masing dari arah berbeda, 1-2 kata sebelumnya mengabur ketika kata baru masuk, lalu semuanya
@@ -18,7 +18,7 @@ import { CAPTIONS, Cap, Word } from "./script";
 // hero merah raksasa di BELAKANG subjek. Posisi otomatis menghindari wajah.
 
 const RED = "#e5160f";
-const FPS = 24;
+
 const FLICKER = [0, 1, 0.2, 1, 0.35, 1, 0.1, 1, 0.6, 0.25, 1, 0.5, 1, 1];
 // harus sama dengan LS di scripts/build-edit.py
 const LS: Record<Word["k"], number> = { s: 0.16, m: 0, l: -0.01, h: -0.01 };

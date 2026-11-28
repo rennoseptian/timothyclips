@@ -1,7 +1,7 @@
 import { Video } from "@remotion/media";
 import { AbsoluteFill, Easing, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { FACE_TRACK } from "./facetrack";
-import { CAPTIONS, DURATION_FRAMES, SHOTS, START_FRAME, START_SEC } from "./script";
+import { AUDIO_END_SEC, CAPTIONS, FPS, SHOTS, START_FRAME, START_SEC } from "./script";
 
 // Kamera digital yang tenang: tiap shot punya bingkai TETAP (berdasarkan posisi wajah median di shot itu)
 // dan hanya zoom-in pelan. Tidak ada sway/tilt/rotasi. Variasi datang dari potongan antar-ukuran.
@@ -10,8 +10,8 @@ import { CAPTIONS, DURATION_FRAMES, SHOTS, START_FRAME, START_SEC } from "./scri
 
 const SRC_W = 1920;
 const SRC_H = 1080;
-export const VIDEO = "Video/MmU4rSTmI5I-4.07-4.26.mp4";
-export const MATTE = "Video/matte-MmU4rSTmI5I-4.07-4.26.mp4";
+export const VIDEO = "Video/kFhF0ArcMQs-2.24-2.55.mp4";
+export const MATTE = "Video/matte-kFhF0ArcMQs-2.24-2.55.mp4";
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
@@ -79,7 +79,7 @@ export const CamVideo: React.FC<{
       muted={!audio}
       trimBefore={START_FRAME}
       volume={(f) =>
-        interpolate(f, [DURATION_FRAMES - 8, DURATION_FRAMES], [1, 0], {
+        interpolate(f, [AUDIO_END_SEC * FPS - 4, AUDIO_END_SEC * FPS], [1, 0], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         })

@@ -4,7 +4,7 @@ import { Captions } from "./Captions";
 import { Sfx } from "./Sfx";
 import { WindahClip } from "./WindahClip";
 import { W_DURATION_FRAMES, W_FPS } from "./windah";
-import { DURATION_FRAMES } from "./script";
+import { DURATION_FRAMES, FPS } from "./script";
 
 type Props = {
   sfx: boolean;
@@ -27,7 +27,7 @@ export const MyComposition = () => {
         id="TimothyClip"
         component={MyComponent}
         durationInFrames={DURATION_FRAMES}
-        fps={24}
+        fps={FPS}
         width={1920}
         height={1080}
         defaultProps={{ sfx: true, sfxGain: 1 }}
@@ -36,7 +36,7 @@ export const MyComposition = () => {
         id="TimothyClip43"
         component={MyComponent}
         durationInFrames={DURATION_FRAMES}
-        fps={24}
+        fps={FPS}
         width={1440}
         height={1080}
         defaultProps={{ sfx: true, sfxGain: 1 }}
@@ -45,7 +45,7 @@ export const MyComposition = () => {
         id="TimothyClipVertical"
         component={MyComponent}
         durationInFrames={DURATION_FRAMES}
-        fps={24}
+        fps={FPS}
         width={1080}
         height={1920}
         defaultProps={{ sfx: true, sfxGain: 1 }}

@@ -15,7 +15,7 @@ Baca file ini dulu. Jangan menjelajah ulang repo tanpa perlu. Semua keputusan ed
 5. Render akhir dilakukan user lewat GitHub Actions "Render video" (memasukkan ID composition; user yang merge PR). Branch kerja: lihat branch terbaru di repo.
 6. Hook "unpushed commits" sering salah (clone dangkal). Verifikasi dengan `git ls-remote --heads origin <branch>` vs `git rev-parse HEAD`. Push: `git -c push.negotiate=true push`.
 
-## Klip Windah Basudara (aktif, branch `windah`, v2)
+## Klip Windah Basudara (selesai, v2; sudah di-merge ke main)
 Sumber `public/Video/windah.mp4` (64.3 dtk, 1080p, 60 fps; video baru dari user via Git LFS, glitch detik 22 sudah hilang) + `public/Caption/transkrip (1).srt` (user: final). Semua `*.mp4` memakai Git LFS (`.gitattributes`): setelah merge/pull jalankan `git lfs fetch origin origin/main --include=...` lalu salin objek dari `.git/lfs/objects` bila `git lfs pull` diam. Composition `WindahClip` (1920x1080, 30 fps, 1929 frame). Cerita emosional: Windah terharu karena Agnes menunggu/ketiduran menonton live-nya, "support system".
 - Keputusan ada di `scripts/build-windah.py` -> `src/windah.ts` (PHRASES by indeks kata di `scripts/words-windah.json`, zona, snap, behind; SHOTS kamera; BRIGHT/LIGHT). Renderer: `src/WindahCaptions.tsx` (lockup), `src/WindahClip.tsx` (kamera + hero di belakang subjek), `src/WindahSfx.tsx`.
 - KAMERA (user, v2): bergerak HANYA saat Windah bicara ke kamera (adegan halaman web Instagram dengan webcam kanan-bawah; daftar SHOTS). B-roll (live PS4, helm, tukang cukur, buket, pelukan, green screen) DIAM. Gaya Timothy: bingkai tetap per shot, zoom-in pelan di sekitar titik tetap (ox, oy), shot makin rapat (1.0 -> 2.0) agar tension naik, blur singkat hanya pada potongan antar-shot di dalam adegan yang sama.
@@ -25,8 +25,11 @@ Sumber `public/Video/windah.mp4` (64.3 dtk, 1080p, 60 fps; video baru dari user 
 - Render latar belakang mati bila sesi berhenti; jalankan ulang bila log berhenti.
 - Kalau user minta versi lain (9:16/4:3): zona dan ukuran perlu dirancang ulang karena footage 16:9 berisi layar web.
 
-## Klip Timothy (arsip; video sudah dihapus dari main)
-Sumber `public/Video/MmU4rSTmI5I-4.07-4.26.mp4` (19 dtk, 1080p, 24 fps, satu kamera statis) + `public/Caption/MmU4rSTmI5I-4.07-4.26.srt` (user: SRT sudah final). Klip final = seluruh video (0-19.0 dtk, 456 frame; START=0). Audio berhenti setelah "...yang ngeri." (~18.6 dtk); kalimat "Uang itu bisa selalu dicari lagi" ada di SRT tapi tidak terucap, jadi dibuang dari caption (builder memotongnya). Tiga composition: `TimothyClip` (16:9), `TimothyClip43` (4:3, 1440x1080), `TimothyClipVertical` (9:16). Branch kerja: `clip3`. Klip lama (p1t, Montserrat v9) ada di riwayat git `clip2`.
+## Klip Timothy aktif: kFhF0ArcMQs-2.24-2.55 (branch `clip-kfh`)
+Sumber `public/Video/kFhF0ArcMQs-2.24-2.55.mp4` (31 dtk, 1080p, 29.97 fps, satu kamera statis; 0.6 dtk pertama putih/kilat) + `public/Caption/kFhF0ArcMQs-2.24-2.55.srt` (user: final; penanda `(mulai)` dan `(selesai)` = kata di luar penanda tidak terucap). Klip: START=0.6 dtk, durasi 28.3 dtk (849 frame, 30 fps); audio dimatikan di 28.02 dtk klip karena setelah "ubah" ada suara kalimat lain (`AUDIO_END_SEC`). Tiga composition: `TimothyClip` (16:9), `TimothyClip43` (4:3), `TimothyClipVertical` (9:16), semuanya 30 fps (`FPS` dari script.ts).
+- Matte `public/Video/matte-kFhF0ArcMQs-2.24-2.55.mp4` dibuat ulang (versi Gemini terpotong/rusak). Kata di `scripts/words.json` (align-words.py). `build-edit.py`: PHRASES kini boleh memakai rentang indeks kata `((dari, sampai), "teks")`; `python3 scripts/build-edit.py --print` mencetak kata beserta indeksnya.
+- Hero merah di belakang subjek: SENDIRI, OTAK, UPGRADE, UBAH. Kata besar putih untuk kata kunci lain.
+- Klip lama MmU4rSTmI5I (19 dtk) hanya ada di riwayat git.
 B-roll anime di `public/BrollFootage/` BELUM dipakai (user masih mencari B-roll anime/film lain; jangan dipakai sebelum diminta).
 
 ## Matte subjek (untuk teks di belakang orang)
@@ -72,5 +75,6 @@ Jalankan ulang: matte (RVM), `python3 scripts/track-face.py` (facetrack.ts; set 
 - v11: klip baru Windah Basudara: gaya caption Timothy, kamera diam, font Coolvetica + Montserrat, caption besar di area kosong. Riwayat remote di-reset ("Initial commit"): branch clip2/clip3 lama tidak ada lagi di origin.
 - v11b: Windah v1 ditolak ("berantakan, tidak ada fokus, tidak ada depth") dan video diganti (tanpa glitch).
 - v12: Windah v2: kamera boleh bergerak gaya Timothy saat Windah bicara (adegan web), B-roll diam; lockup satu fokus + depth; hero di belakang subjek untuk 3 kata.
+- v13: klip baru kFhF0ArcMQs (gaya Timothy), matte dan builder diperbarui; FPS ikut sumber (30).
 - v10b: user minta versi 4:3: composition `TimothyClip43` memakai kamera/caption 16:9 apa adanya (tanpa perubahan kode lain), sudah dicek penuh.
 - Hero belakang-subjek (16:9 dan 4:3) tidak boleh terpotong tepi bingkai atau kepala: kotak hero dibatasi antara tepi layar dan sisi kepala (Captions.tsx, margin 0.8x lebar wajah). Teks hero jadi lebih kecil, tapi terbaca penuh. 9:16 tidak berubah.

@@ -1,4 +1,4 @@
-"""Bangun src/script.ts (semua keputusan edit) untuk klip MmU4rSTmI5I-4.07-4.26.
+"""Bangun src/script.ts (semua keputusan edit) untuk klip kFhF0ArcMQs-2.24-2.55.
 
 Semua ucapan jadi typography Montserrat: kata muncul SATU PER SATU (waktu tiap kata dari scripts/words.json),
 tiap kata dari arah berbeda, 1-2 kata sebelumnya mengabur saat kata baru masuk, lalu semuanya menyatu jadi satu
@@ -8,57 +8,66 @@ Notasi teks:  baris dipisah " / ".  *KATA* = kata penting (sedang)  **KATA** = k
 """
 import json
 import re
+import sys
 
 from PIL import ImageFont
 
-START = 0.0            # klip MmU4rSTmI5I: seluruh video 19 dtk dipakai
-END = 19.0             # akhir klip; ucapan berakhir di "...yang ngeri." (~18.6 dtk)
-FPS = 24
+START = 0.6            # klip kFhF0ArcMQs: 0.6 dtk pertama video putih (kilat), klip mulai saat pembicara muncul
+END = 28.3             # durasi klip (detik, relatif START): ucapan berakhir di "ubah" (video 28.6 dtk), sisa SRT tidak terucap
+AUDIO_END = 28.02      # detik klip: audio dimatikan di sini (setelah "ubah" ada suara kalimat lain)
+FPS = 30
 MB = ImageFont.truetype("public/Fonts/Montserrat-Black.ttf", 1000)
 LS = {"s": 0.16, "m": 0.0, "l": -0.01, "h": -0.01}  # letter-spacing per jenis (em), harus sama dengan Captions.tsx
 
 # ---------------- KAMERA: (dari, sampai, zoom awal, zoom akhir, posisi wajah x, y, blur) ----------------
 # wide 1.0 | MCU 1.35-1.5 | CU 1.55-1.9 | ECU ~2.0. Zoom pelan saja, tanpa goyang.
 SHOTS = [
-    (0.00, 1.08, 1.40, 1.48, 0.62, 0.42, 0),
-    (1.08, 3.72, 1.00, 1.05, 0.50, 0.44, 10),
-    (3.72, 5.61, 1.60, 1.70, 0.38, 0.42, 12),
-    (5.61, 7.55, 1.35, 1.45, 0.64, 0.42, 12),
-    (7.55, 9.32, 1.75, 1.90, 0.62, 0.40, 12),
-    (9.32, 12.06, 1.00, 1.05, 0.50, 0.44, 10),
-    (12.06, 14.16, 1.75, 1.90, 0.38, 0.40, 12),
-    (14.16, 15.60, 1.00, 1.04, 0.50, 0.44, 10),
-    (15.60, 17.68, 1.70, 1.85, 0.62, 0.42, 12),
-    (17.68, END, 2.00, 2.10, 0.38, 0.40, 14),
+    (0.00, 2.20, 1.40, 1.48, 0.50, 0.42, 0),
+    (2.20, 4.50, 1.00, 1.05, 0.50, 0.44, 10),
+    (4.50, 6.70, 1.60, 1.70, 0.38, 0.42, 12),
+    (6.70, 8.80, 1.35, 1.45, 0.64, 0.42, 12),
+    (8.80, 11.00, 1.75, 1.90, 0.62, 0.40, 12),
+    (11.00, 13.20, 1.00, 1.05, 0.50, 0.44, 10),
+    (13.20, 15.00, 1.35, 1.45, 0.38, 0.42, 12),
+    (15.00, 17.20, 1.60, 1.70, 0.62, 0.42, 12),
+    (17.20, 19.30, 1.00, 1.05, 0.50, 0.44, 10),
+    (19.30, 20.70, 1.40, 1.50, 0.64, 0.42, 12),
+    (20.70, 23.00, 1.70, 1.85, 0.38, 0.40, 12),
+    (23.00, 25.00, 1.00, 1.05, 0.50, 0.44, 10),
+    (25.00, 27.10, 1.45, 1.55, 0.62, 0.42, 12),
+    (27.10, END, 2.00, 2.10, 0.38, 0.40, 14),
 ]
 
-# ---------------- CAPTION: (indeks frasa otomatis yang digabung, teks) ----------------
+# ---------------- CAPTION: ([indeks frasa otomatis]) atau ((kata_dari, kata_sampai) indeks kata terfilter, inklusif), teks ----------------
 PHRASES = [
-    ([0], "Gua enggak pernah / ^TAKUT^"),
-    ([1], "ibaratnya sama / *ORANG* yang"),
-    ([2], "seumur hidupnya / *HIDUPNYA*"),
-    ([3], "selalu / **GAMPANG.**"),
-    ([4, 5], "Ya, dari kecil / dia *GAMPANG,*"),
-    ([6, 7], "dia besar hidupnya itu / **GAMPANG.**"),
-    ([8, 9], "Orang seperti itu enggak / ^NGERI.^"),
-    ([10], "Orang **NGERI** / adalah orang"),
-    ([11], "yang *HIDUPNYA* / ini sudah"),
-    ([12], "mau / **DIHANCURIN** / sama"),
-    ([13], "berbagai macam / **CARA** di"),
-    ([14], "dunia lalu / dia **TETAP**"),
-    ([15], "^BERDIRI,^"),
-    ([16], "dia tetap / **JALAN.**"),
-    ([17, 18, 19], "Nah, itu orangnya yang gua / **TAKUT,**"),
-    ([20], "itu orang yang / ^NGERI.^"),
+    ((0, 5), "Jangan pernah / **BERGANTUNG** sama / *ORANG LAIN*"),
+    ((6, 10), "Jangan pernah / **BERGANTUNG** sama / *KELUARGA*"),
+    ((11, 14), "jangan pernah / **BERGANTUNG** sama"),
+    ((15, 17), "lu itu / ^SENDIRI^"),
+    ((18, 22), "dan kalau tahu / lu *SENDIRI*"),
+    ((23, 27), "**SATU-SATUNYA** / hal yang lu bisa"),
+    ((28, 31), "**KONTROL** itu adalah / ^OTAK^"),
+    ((32, 35), "lu *KALIAN* / enggak bisa"),
+    ((36, 41), "**MILIH** kok mau / lahir di *KELUARGA*"),
+    ((42, 44), "**MISKIN** / atau / **KAYA**"),
+    ((45, 50), "*KALIAN* enggak bisa / **MILIH** kok lahir"),
+    ((51, 56), "di *KEBETULAN* / keluarga yang banyak / **HUTANG**"),
+    ((57, 61), "*KALIAN* juga / enggak bisa **PILIH**"),
+    ((62, 68), "ibaratnya / mau besok itu / **HUJAN** atau enggak"),
+    ((69, 73), "tapi yang bisa / kita **LAKUKAN**"),
+    ((74, 77), "adalah kita / ^UPGRADE^ / *OTAK*"),
+    ((78, 81), "kita kita *ASA* / **SKILL**"),
+    ((82, 86), "kita kita upgrade / *KEMAMPUAN* / **INTERNAL**"),
+    ((87, 91), "kita *FOKUS* di / yang **INTERNAL**"),
+    ((92, 96), "ya di / **MINDSET** / di *OTAK*"),
+    ((97, 100), "yang kita bisa / ^UBAH^"),
 ]
 
 # ---------------- bangun frasa otomatis dari words.json ----------------
 words = [w for w in json.load(open("scripts/words.json")) if not w.get("x") and w["t1"] > START]
-# SRT menyertakan "Uang itu bisa selalu dicari lagi." tetapi audio klip berhenti (hening) setelah "ngeri." (~18.6 dtk):
-# kalimat itu tidak terucap, jadi tidak dijadikan caption (caption harus sesuai ucapan).
-cut = max(i for i, w in enumerate(words) if w["w"] == "ngeri.")
+# SRT menyertakan "sesayang-sayangnya ya orang" setelah penanda (selesai): tidak terucap, sudah ditandai x oleh align-words.py.
+cut = max(i for i, w in enumerate(words) if w["w"] == "ubah")
 words = words[:cut + 1]
-words[-1]["t1"] = 18.6
 auto, cur = [], []
 for x in words:
     if cur and (x["t0"] - cur[-1]["t1"] > 0.2 or len(cur) >= 4
@@ -82,11 +91,15 @@ def parse_line(line):
             toks.append((w, kind))
     return toks
 
+if "--print" in sys.argv:
+    print(" ".join(f'{i}:{w["w"]}@{w["t0"]:.2f}' for i, w in enumerate(words)))
+    sys.exit(0)
+
 norm = lambda t: re.sub(r"[^a-z0-9']", "", t.lower())
 caps = []
 for entry in PHRASES:
     idxs, text = entry[0], entry[1]
-    ws = [w for i in idxs for w in auto[i - OFFSET]]
+    ws = words[idxs[0]:idxs[1] + 1] if isinstance(idxs, tuple) else [w for i in idxs for w in auto[i - OFFSET]]
     if len(entry) > 2:
         ws = ws[entry[2][0]:entry[2][1]]
     lines = [parse_line(l.strip()) for l in text.split(" / ")]
@@ -111,7 +124,7 @@ for i, c in enumerate(caps[:-1]):
     if c["behind"] and caps[i + 1]["behind"]:
         c["end"] = round(min(c["end"], caps[i + 1]["at"]), 2)  # teks belakang berurutan tidak boleh bertumpuk
 
-FLICK = {"TAKUT"}
+FLICK = {"SENDIRI"}
 def ts_word(x):
     return f'{{ t: {json.dumps(x["t"], ensure_ascii=False)}, k: "{x["k"]}", at: {x["at"]}, w: {x["w"]} }}'
 
@@ -143,16 +156,17 @@ cues.append((round(END - 1.5, 2), "riser", 1.0, 0.8, 0.9))
 cues.sort()
 sfx = "\n".join(f'  {{ at: {a}, k: "{k}", rate: {r}, gain: {g}, fade: {f} }},' for a, k, r, g, f in cues)
 
-HEADER = """// Edit script untuk klip MmU4rSTmI5I-4.07-4.26 (dihasilkan oleh scripts/build-edit.py; edit di sana lalu jalankan ulang,
+HEADER = """// Edit script untuk klip kFhF0ArcMQs-2.24-2.55 (dihasilkan oleh scripts/build-edit.py; edit di sana lalu jalankan ulang,
 // atau edit langsung file ini untuk perubahan kecil). Waktu dalam detik dari awal klip. Tanpa import
 // supaya bisa dibaca skrip lain.
 
-export const FPS = 24;
-/** klip final dimulai di detik ini pada video sumber (seluruh video) */
-export const START_SEC = 0;
-export const START_FRAME = 0;
-/** 19 dtk penuh: 456 frame */
-export const DURATION_FRAMES = 456;
+export const FPS = __FPS__;
+/** klip final dimulai di detik ini pada video sumber */
+export const START_SEC = __START__;
+export const START_FRAME = __SF__;
+/** audio dimatikan di detik klip ini (sesudah kata terakhir) */
+export const AUDIO_END_SEC = __AE__;
+export const DURATION_FRAMES = __DUR__;
 
 export type Shot = {
   from: number;
@@ -193,6 +207,7 @@ export type SfxCue = { at: number; k: SfxKey; rate?: number; gain?: number; fade
 """
 body = (HEADER + "\nexport const SHOTS: Shot[] = [\n" + shots + "\n];\n\nexport const CAPTIONS: Cap[] = [\n" + "\n".join(out)
         + "\n];\n" + sfx_lib + "\nexport const SFX_CUES: SfxCue[] = [\n" + sfx + "\n];\n")
+body = body.replace("__FPS__", str(FPS)).replace("__DUR__", str(round(END * FPS))).replace("__START__", str(START)).replace("__SF__", str(round(START * FPS))).replace("__AE__", str(AUDIO_END))
 open("src/script.ts", "w", encoding="utf-8").write(body)
 print(len(caps), "caption,", len(cues), "cue sfx,", len(SHOTS), "shot")
 for c in caps:
