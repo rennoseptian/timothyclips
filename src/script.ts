@@ -7,8 +7,9 @@ export const FPS = 30;
 export const START_SEC = 0.6;
 export const START_FRAME = 18;
 /** audio dimatikan di detik klip ini (sesudah kata terakhir) */
-export const AUDIO_END_SEC = 28.02;
-export const DURATION_FRAMES = 849;
+export const AUDIO_END_SEC = 30.4;
+export const VIDEO_FRAMES = 912; // frame klip yang punya footage; sesudahnya frame terakhir ditahan
+export const DURATION_FRAMES = 933;
 
 export type Shot = {
   from: number;
@@ -41,7 +42,8 @@ export const SHOTS: Shot[] = [
   { from: 20.7, to: 23.0, s: [1.7, 1.85], px: 0.38, py: 0.4, blur: 12 },
   { from: 23.0, to: 25.0, s: [1.0, 1.05], px: 0.5, py: 0.44, blur: 10 },
   { from: 25.0, to: 27.1, s: [1.45, 1.55], px: 0.62, py: 0.42, blur: 12 },
-  { from: 27.1, to: 28.3, s: [2.0, 2.1], px: 0.38, py: 0.4, blur: 14 },
+  { from: 27.1, to: 28.95, s: [1.75, 1.85], px: 0.62, py: 0.4, blur: 14 },
+  { from: 28.95, to: 31.099999999999998, s: [2.0, 2.15], px: 0.38, py: 0.4, blur: 14 },
 ];
 
 export const CAPTIONS: Cap[] = [
@@ -63,9 +65,9 @@ export const CAPTIONS: Cap[] = [
   { at: 20.81, end: 22.16, behind: true, lines: [[{ t: "adalah", k: "s", at: 20.81, w: 5.625 }, { t: "kita", k: "s", at: 21.15, w: 3.18 }], [{ t: "UPGRADE", k: "h", at: 21.47, w: 5.276 }], [{ t: "OTAK", k: "m", at: 21.81, w: 3.028 }]] },
   { at: 22.04, end: 23.22, behind: false, lines: [[{ t: "kita", k: "s", at: 22.04, w: 3.18 }, { t: "kita", k: "s", at: 22.34, w: 3.18 }, { t: "ASA", k: "m", at: 22.65, w: 2.269 }], [{ t: "SKILL", k: "l", at: 22.95, w: 2.956 }]] },
   { at: 23.1, end: 25.55, behind: false, lines: [[{ t: "kita", k: "s", at: 23.1, w: 3.18 }, { t: "kita", k: "s", at: 23.41, w: 3.18 }, { t: "upgrade", k: "s", at: 23.71, w: 6.466 }], [{ t: "KEMAMPUAN", k: "m", at: 24.44, w: 7.254 }], [{ t: "INTERNAL", k: "l", at: 24.94, w: 5.373 }]] },
-  { at: 25.43, end: 27.16, behind: false, lines: [[{ t: "kita", k: "s", at: 25.43, w: 3.18 }, { t: "FOKUS", k: "m", at: 25.77, w: 3.683 }, { t: "di", k: "s", at: 26.55, w: 1.496 }], [{ t: "yang", k: "s", at: 26.71, w: 3.674 }, { t: "INTERNAL", k: "l", at: 26.88, w: 5.373 }]] },
-  { at: 27.04, end: 27.52, behind: false, lines: [[{ t: "ya", k: "s", at: 27.04, w: 1.781 }, { t: "di", k: "s", at: 27.09, w: 1.496 }], [{ t: "MINDSET", k: "l", at: 27.14, w: 4.848 }], [{ t: "di", k: "s", at: 27.24, w: 1.496 }, { t: "OTAK", k: "m", at: 27.29, w: 3.028 }]] },
-  { at: 27.4, end: 28.3, behind: true, lines: [[{ t: "yang", k: "s", at: 27.4, w: 3.674 }, { t: "kita", k: "s", at: 27.45, w: 3.18 }, { t: "bisa", k: "s", at: 27.55, w: 3.226 }], [{ t: "UBAH", k: "h", at: 27.83, w: 3.127 }]] },
+  { at: 25.43, end: 27.48, behind: false, lines: [[{ t: "kita", k: "s", at: 25.43, w: 3.18 }, { t: "FOKUS", k: "m", at: 25.77, w: 3.683 }, { t: "di", k: "s", at: 26.55, w: 1.496 }], [{ t: "yang", k: "s", at: 26.71, w: 3.674 }, { t: "INTERNAL", k: "l", at: 26.88, w: 5.373 }]] },
+  { at: 27.36, end: 29.11, behind: false, lines: [[{ t: "ya", k: "s", at: 27.36, w: 1.781 }, { t: "di", k: "s", at: 27.52, w: 1.496 }], [{ t: "MINDSET", k: "l", at: 27.85, w: 4.848 }], [{ t: "di", k: "s", at: 28.5, w: 1.496 }, { t: "OTAK", k: "m", at: 28.67, w: 3.028 }]] },
+  { at: 28.99, end: 30.82, behind: true, lines: [[{ t: "yang", k: "s", at: 28.99, w: 3.674 }, { t: "kita", k: "s", at: 29.15, w: 3.18 }, { t: "bisa", k: "s", at: 29.96, w: 3.226 }], [{ t: "UBAH", k: "h", at: 30.16, w: 3.127 }]] },
 ];
 
 // vol = volume dasar hasil normalisasi loudness tiap file (jangan dinaikkan sembarangan).
@@ -128,9 +130,11 @@ export const SFX_CUES: SfxCue[] = [
   { at: 24.94, k: "tickB", rate: 0.95, gain: 1.0, fade: 0.2 },
   { at: 24.95, k: "focus", rate: 1.0, gain: 0.8, fade: 0.45 },
   { at: 25.77, k: "tickF", rate: 1.12, gain: 1.0, fade: 0.2 },
-  { at: 26.8, k: "riser", rate: 1.0, gain: 0.8, fade: 0.9 },
   { at: 26.88, k: "tickC", rate: 1.0, gain: 1.0, fade: 0.2 },
   { at: 27.05, k: "whoosh", rate: 1.08, gain: 0.8, fade: 0.45 },
-  { at: 27.29, k: "tickE", rate: 1.08, gain: 1.0, fade: 0.2 },
-  { at: 27.83, k: "glitch", rate: 1.0, gain: 0.7, fade: 0.3 },
+  { at: 27.85, k: "tickE", rate: 1.08, gain: 1.0, fade: 0.2 },
+  { at: 28.67, k: "tickA", rate: 0.95, gain: 1.0, fade: 0.2 },
+  { at: 28.9, k: "focus", rate: 0.92, gain: 0.8, fade: 0.45 },
+  { at: 28.9, k: "riser", rate: 1.0, gain: 0.8, fade: 0.9 },
+  { at: 30.16, k: "digital", rate: 1.05, gain: 0.7, fade: 0.4 },
 ];

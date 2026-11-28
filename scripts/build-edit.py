@@ -13,8 +13,10 @@ import sys
 from PIL import ImageFont
 
 START = 0.6            # klip kFhF0ArcMQs: 0.6 dtk pertama video putih (kilat), klip mulai saat pembicara muncul
-END = 28.3             # durasi klip (detik, relatif START): ucapan berakhir di "ubah" (video 28.6 dtk), sisa SRT tidak terucap
-AUDIO_END = 28.02      # detik klip: audio dimatikan di sini (setelah "ubah" ada suara kalimat lain)
+END = 30.4             # durasi klip (detik, relatif START): video sumber 31.0 dtk, ucapan berakhir di "ubah" (~30.97 dtk sumber)
+HOLD = 0.7             # detik: frame terakhir ditahan (audio senyap) supaya kata terakhir (UBAH) sempat terbaca sebelum turun ke hitam
+TOTAL = END + HOLD
+AUDIO_END = 30.4       # detik klip: audio utuh sampai akhir (tidak ada kalimat lain sesudah "ubah")
 FPS = 30
 MB = ImageFont.truetype("public/Fonts/Montserrat-Black.ttf", 1000)
 LS = {"s": 0.16, "m": 0.0, "l": -0.01, "h": -0.01}  # letter-spacing per jenis (em), harus sama dengan Captions.tsx
@@ -35,7 +37,8 @@ SHOTS = [
     (20.70, 23.00, 1.70, 1.85, 0.38, 0.40, 12),
     (23.00, 25.00, 1.00, 1.05, 0.50, 0.44, 10),
     (25.00, 27.10, 1.45, 1.55, 0.62, 0.42, 12),
-    (27.10, END, 2.00, 2.10, 0.38, 0.40, 14),
+    (27.10, 28.95, 1.75, 1.85, 0.62, 0.40, 14),
+    (28.95, TOTAL, 2.00, 2.15, 0.38, 0.40, 14),
 ]
 
 # ---------------- CAPTION: ([indeks frasa otomatis]) atau ((kata_dari, kata_sampai) indeks kata terfilter, inklusif), teks ----------------
@@ -118,8 +121,8 @@ for entry in PHRASES:
                  "behind": any(x["k"] == "h" for r in out_lines for x in r)})
 
 for i, c in enumerate(caps):
-    nxt = caps[i + 1]["at"] if i + 1 < len(caps) else END
-    c["end"] = round(min(max(c["t1"] + 0.45, c["at"] + 0.55), nxt + 0.12, END), 2)
+    nxt = caps[i + 1]["at"] if i + 1 < len(caps) else TOTAL
+    c["end"] = round(min(max(c["t1"] + 0.45, c["at"] + 0.55), nxt + 0.12, TOTAL), 2)
 for i, c in enumerate(caps[:-1]):
     if c["behind"] and caps[i + 1]["behind"]:
         c["end"] = round(min(c["end"], caps[i + 1]["at"]), 2)  # teks belakang berurutan tidak boleh bertumpuk
@@ -166,6 +169,7 @@ export const START_SEC = __START__;
 export const START_FRAME = __SF__;
 /** audio dimatikan di detik klip ini (sesudah kata terakhir) */
 export const AUDIO_END_SEC = __AE__;
+export const VIDEO_FRAMES = __VF__; // frame klip yang punya footage; sesudahnya frame terakhir ditahan
 export const DURATION_FRAMES = __DUR__;
 
 export type Shot = {
@@ -207,7 +211,7 @@ export type SfxCue = { at: number; k: SfxKey; rate?: number; gain?: number; fade
 """
 body = (HEADER + "\nexport const SHOTS: Shot[] = [\n" + shots + "\n];\n\nexport const CAPTIONS: Cap[] = [\n" + "\n".join(out)
         + "\n];\n" + sfx_lib + "\nexport const SFX_CUES: SfxCue[] = [\n" + sfx + "\n];\n")
-body = body.replace("__FPS__", str(FPS)).replace("__DUR__", str(round(END * FPS))).replace("__START__", str(START)).replace("__SF__", str(round(START * FPS))).replace("__AE__", str(AUDIO_END))
+body = body.replace("__FPS__", str(FPS)).replace("__DUR__", str(round(TOTAL * FPS))).replace("__VF__", str(round(END * FPS))).replace("__START__", str(START)).replace("__SF__", str(round(START * FPS))).replace("__AE__", str(AUDIO_END))
 open("src/script.ts", "w", encoding="utf-8").write(body)
 print(len(caps), "caption,", len(cues), "cue sfx,", len(SHOTS), "shot")
 for c in caps:
