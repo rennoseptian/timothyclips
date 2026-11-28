@@ -1,7 +1,7 @@
 import { Video } from "@remotion/media";
-import { AbsoluteFill, Easing, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Easing, Freeze, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { FACE_TRACK } from "./facetrack";
-import { CAPTIONS, DURATION_FRAMES, SHOTS, START_FRAME, START_SEC } from "./script";
+import { AUDIO_END_SEC, CAPTIONS, FPS, SHOTS, START_FRAME, START_SEC, VIDEO_FRAMES } from "./script";
 
 // Kamera digital yang tenang: tiap shot punya bingkai TETAP (berdasarkan posisi wajah median di shot itu)
 // dan hanya zoom-in pelan. Tidak ada sway/tilt/rotasi. Variasi datang dari potongan antar-ukuran.
@@ -10,8 +10,8 @@ import { CAPTIONS, DURATION_FRAMES, SHOTS, START_FRAME, START_SEC } from "./scri
 
 const SRC_W = 1920;
 const SRC_H = 1080;
-export const VIDEO = "Video/MmU4rSTmI5I-4.07-4.26.mp4";
-export const MATTE = "Video/matte-MmU4rSTmI5I-4.07-4.26.mp4";
+export const VIDEO = "Video/kFhF0ArcMQs-2.24-2.55.mp4";
+export const MATTE = "Video/matte-kFhF0ArcMQs-2.24-2.55.mp4";
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
@@ -73,13 +73,14 @@ export const CamVideo: React.FC<{
   const { fps, width, height } = useVideoConfig();
   const c = cameraAt(frame / fps, width, height);
   return (
+    <Freeze frame={Math.min(frame, VIDEO_FRAMES - 1)}>
     <Video
       name={name}
       src={staticFile(src)}
-      muted={!audio}
+      muted={!audio || frame >= VIDEO_FRAMES}
       trimBefore={START_FRAME}
       volume={(f) =>
-        interpolate(f, [DURATION_FRAMES - 8, DURATION_FRAMES], [1, 0], {
+        interpolate(f, [AUDIO_END_SEC * FPS - 2, AUDIO_END_SEC * FPS], [1, 0], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         })
@@ -96,6 +97,7 @@ export const CamVideo: React.FC<{
         mixBlendMode: blend,
       }}
     />
+    </Freeze>
   );
 };
 

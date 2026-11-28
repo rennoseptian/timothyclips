@@ -132,20 +132,9 @@ for bi, block in enumerate(blocks):
         post = re.sub(r"\([^)]*\)", " ", text[m.end():]).split()
         start_marker = m.group(1).lower().startswith(("video start", "mulai"))
         gap = longest_gap(a, b)
-        # Jika penanda (selesai) ditulis di blok yang timestamp-nya bergeser sesudah jeda hening,
-        # cari jeda terpanjang mundur ke blok sebelumnya agar kata sebelum (selesai) tidak telat.
-        if not start_marker and gap is None and words:
-            prev_a = to_s(blocks[bi - 1].split("\n")[1].split("-->")[0])
-            back_gap = longest_gap(prev_a, b)
-            if back_gap is not None and back_gap[0] < a:
-                prev_toks = []
-                while words and words[-1]["t0"] >= prev_a - 0.06:
-                    prev_toks.insert(0, words.pop()["w"])
-                place(prev_toks + pre, prev_a, back_gap[0], words, skip=False)
-                place(post, back_gap[1], b, words, skip=True)
-                continue
         if gap is None:
-            gap = (a + (b - a) * len(pre) / max(1, len(pre) + len(post)),) * 2
+            # tanpa jeda di blok: kata sebelum penanda mengisi seluruh blok (kata sesudah penanda tidak terucap)
+            gap = ((b - 0.03,) * 2) if not start_marker else (a + (b - a) * len(pre) / max(1, len(pre) + len(post)),) * 2
         # kata sebelum penanda mengisi bagian sebelum jeda terpanjang, sesudahnya bagian sesudah jeda
         place(pre, a, gap[0], words, skip=start_marker)
         place(post, gap[1], b, words, skip=not start_marker)
