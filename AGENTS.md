@@ -1,7 +1,6 @@
 # Panduan agen: klip podcast Timothy Ronald (Remotion)
 
-> Catatan untuk Antigravity: berkas ini salinan  (sumber utama). Saat memperbarui, ubah KEDUANYA. Skill gaya ada di  dan . Alat khusus Claude (task list, kirim file, Project "Editing") tidak ada di sini: baca hasil render langsung dari folder .
-
+> Catatan untuk Antigravity: berkas ini salinan `CLAUDE.md` (sumber utama). Saat memperbarui, ubah KEDUANYA. Skill gaya ada di `.agents/skills/timothy-style-guide` dan `.agents/skills/timothy-new-clip`. Alat khusus Claude (task list, kirim file, Project "Editing") tidak ada di sini: baca hasil render langsung dari folder `out/`.
 
 Dokumen hidup, bukan aturan mutlak. Isinya catatan preferensi user sejauh ini supaya hasil makin akurat. Keputusan akhir selalu di user: kalau user meminta sesuatu yang berbeda dari catatan ini, ikuti permintaan user lalu perbarui catatannya.
 
