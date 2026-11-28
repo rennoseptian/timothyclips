@@ -121,18 +121,31 @@ def longest_gap(a, b, min_len=0.15, thr=-50.0):
 
 
 words = []
-for block in re.split(r"\n\n+", open(SRT, encoding="utf-8").read().replace("\r", "").strip()):
+blocks = re.split(r"\n\n+", open(SRT, encoding="utf-8").read().replace("\r", "").strip())
+for bi, block in enumerate(blocks):
     lines = block.split("\n")
     a, b = (to_s(p) for p in lines[1].split("-->"))
     text = " ".join(lines[2:])
-    m = re.search(r"\((video start[^)]*|selesai[^)]*)\)", text)
+    m = re.search(r"\((video start[^)]*|mulai[^)]*|selesai[^)]*)\)", text, re.I)
     if m:
         pre = re.sub(r"\([^)]*\)", " ", text[: m.start()]).split()
         post = re.sub(r"\([^)]*\)", " ", text[m.end():]).split()
+        start_marker = m.group(1).lower().startswith(("video start", "mulai"))
         gap = longest_gap(a, b)
+        # Jika penanda (selesai) ditulis di blok yang timestamp-nya bergeser sesudah jeda hening,
+        # cari jeda terpanjang mundur ke blok sebelumnya agar kata sebelum (selesai) tidak telat.
+        if not start_marker and gap is None and words:
+            prev_a = to_s(blocks[bi - 1].split("\n")[1].split("-->")[0])
+            back_gap = longest_gap(prev_a, b)
+            if back_gap is not None and back_gap[0] < a:
+                prev_toks = []
+                while words and words[-1]["t0"] >= prev_a - 0.06:
+                    prev_toks.insert(0, words.pop()["w"])
+                place(prev_toks + pre, prev_a, back_gap[0], words, skip=False)
+                place(post, back_gap[1], b, words, skip=True)
+                continue
         if gap is None:
             gap = (a + (b - a) * len(pre) / max(1, len(pre) + len(post)),) * 2
-        start_marker = m.group(1).startswith("video start")
         # kata sebelum penanda mengisi bagian sebelum jeda terpanjang, sesudahnya bagian sesudah jeda
         place(pre, a, gap[0], words, skip=start_marker)
         place(post, gap[1], b, words, skip=not start_marker)
